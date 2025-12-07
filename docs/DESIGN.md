@@ -1,8 +1,8 @@
-# yaml-expr Design Document
+# yamlexpr Design Document
 
 ## Overview
 
-`yaml-expr` is a minimalist YAML composition and expression language for Go. It provides variable interpolation, conditionals, file composition, and loop expansion for YAML documents.
+`yamlexpr` is a minimalist YAML composition and expression language for Go. It provides variable interpolation, conditionals, file composition, and loop expansion for YAML documents.
 
 ## Design Philosophy
 
@@ -19,7 +19,7 @@ The stack package contains **only** the essential functionality needed for varia
 
 The `stack` package is intentionally generic and dependency-free:
 
-- Can be imported by vuego, lessgo, yaml-expr, or any other project
+- Can be imported by vuego, lessgo, yamlexpr, or any other project
 - Uses only Go standard library
 - Caches path resolution to avoid repeated parsing
 - Provides stack-based scoping with push/pop semantics
@@ -43,7 +43,7 @@ Kept separate from `stack` to maintain reusability.
 ## Package Organization
 
 ```
-yaml-expr/
+yamlexpr/
 ├── stack/           # Reusable variable scope stack
 │   ├── stack.go
 │   └── stack_test.go
@@ -72,8 +72,6 @@ yaml-expr/
    - Nested path support (${obj.path})
    - Missing variable handling (returns placeholder)
 
-### Waiting
-
 3. **Include composition**
    - Load external YAML files
    - Merge into current document
@@ -82,12 +80,14 @@ yaml-expr/
 4. **For loops**
    - Iterate over arrays
    - Loop variable in scope
-   - Support for objects
+   - Support for nested structures
+   - Index variable access
 
 5. **If conditions**
-   - go-expr integration for expression evaluation
-   - Include/exclude blocks based on condition
-   - Support for comparisons and logical operators
+   - Conditional inclusion/exclusion of blocks
+   - Direct boolean values and expressions
+   - Negation support
+   - Works with for loops and includes
 
 ## Design Decisions
 
@@ -120,24 +120,12 @@ Follows lessgo pattern:
 
 ## Integration Points
 
-### With go-expr
-
-For evaluating `if:` conditions, yaml-expr will import github.com/go-expr/go-expr:
-
-```go
-// Planned
-if cond, ok := m["if"]; ok {
-  env := st.All()  // Get all variables as map[string]any
-  result := expr.Eval(cond, env)  // Evaluate expression
-}
-```
-
 ### With Other Projects
 
 The `stack` package can be imported by:
 
 ```go
-import "github.com/titpetric/yaml-expr/stack"
+import "github.com/titpetric/yamlexpr/stack"
 
 s := stack.New(map[string]any{"x": 1})
 ```

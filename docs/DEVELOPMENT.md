@@ -1,6 +1,6 @@
-# Development Workflow for yaml-expr
+# Development Workflow for yamlexpr
 
-This document explains the SDLC (Software Development Life Cycle) workflow for yaml-expr features.
+This document explains the SDLC (Software Development Life Cycle) workflow for yamlexpr features.
 
 ## Feature Status States
 
@@ -209,7 +209,7 @@ go build ./... && go test -v ./...
 ## File Organization
 
 ```
-yaml-expr/
+yamlexpr/
 ├── stack/                    # Core variable scoping (reusable)
 │   ├── stack.go             # Implementation
 │   └── stack_test.go        # Black box tests
@@ -223,11 +223,15 @@ yaml-expr/
 │
 ├── testdata/
 │   └── fixtures/            # Test fixtures
-│       ├── 001-*.yaml       # Basic tests
-│       ├── 010-*.yaml       # Feature 4 (interpolation)
-│       ├── 020-*.yaml       # Feature 1 (includes) - planned
-│       ├── 030-*.yaml       # Feature 2 (loops) - planned
-│       └── 040-*.yaml       # Feature 3 (conditionals) - planned
+│       ├── 001-*.yaml       # Basic pass-through
+│       ├── 030-*.yaml       # Conditionals (if directives)
+│       ├── 040-*.yaml       # For loops
+│       ├── 050-*.yaml       # Combined for/if/interpolation
+│       ├── 060-*.yaml       # Include composition
+│       ├── 070-*.yaml       # Nested structures
+│       ├── 080-*.yaml       # Advanced features
+│       ├── 090-*.yaml       # Unquoted syntax variants
+│       └── _*.yaml          # Base files for includes
 │
 ├── README.md                # Feature status and usage
 ├── AGENTS.md                # Development conventions

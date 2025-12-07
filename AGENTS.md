@@ -1,4 +1,4 @@
-# Agent Guidelines for yaml-expr
+# Agent Guidelines for yamlexpr
 
 This file contains conventions and preferences for AI agents working on this codebase.
 
@@ -56,7 +56,7 @@ Files are resolved relative to the base directory (fs.FS) passed to Expr.New().
 ## Testing Conventions
 
 ### Black Box Testing Philosophy
-- **Prefer black box tests** using `package yaml-expr_test` or specific `package expr_test` instead of internal packages
+- **Prefer black box tests** using `package yamlexpr_test` or specific `package expr_test` instead of internal packages
 - Tests should only interact with exported APIs
 - This allows running individual test files: `go test -v stack_test.go`
 

@@ -3,8 +3,16 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/yamlexpr.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr)
 [![Go Report Card](https://goreportcard.com/badge/github.com/titpetric/yamlexpr)](https://goreportcard.com/report/github.com/titpetric/yamlexpr)
 [![PkgGoDev](https://img.shields.io/badge/docs-pkg.go.dev-blue.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr)
+[![Test Coverage](https://img.shields.io/badge/coverage-76.25%25-yellow)](docs/testing-coverage.md)
 
 YAML composition, interpolation, and conditional evaluation for Go.
+
+## Documentation
+
+- **[API Reference](docs/api.md)** - Complete API documentation
+- **[Design Document](docs/DESIGN.md)** - Architecture and design decisions
+- **[Development Guide](docs/DEVELOPMENT.md)** - Development workflow and feature implementation
+- **[Test Coverage](docs/testing-coverage.md)** - Test coverage analysis
 
 ## Installation
 
