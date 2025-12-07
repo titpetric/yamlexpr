@@ -1,0 +1,12 @@
+users:
+  - for: ["alice", "bob", "charlie"]
+    name: "${item}"
+    active: true
+---
+users:
+  - name: "alice"
+    active: true
+  - name: "bob"
+    active: true
+  - name: "charlie"
+    active: true

@@ -1,0 +1,19 @@
+app:
+  features:
+    auth:
+      if: true
+      login:
+        if: true
+        enabled: true
+      logout:
+        if: false
+        enabled: false
+    admin:
+      if: false
+      panel: "hidden"
+---
+app:
+  features:
+    auth:
+      login:
+        enabled: true

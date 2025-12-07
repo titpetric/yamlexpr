@@ -1,0 +1,19 @@
+config:
+  prod:
+    if: true
+    setting1: "value1"
+  dev:
+    if: false
+    setting2: "value2"
+  test:
+    if: false
+    setting3: "value3"
+  staging:
+    if: true
+    setting4: "value4"
+---
+config:
+  prod:
+    setting1: "value1"
+  staging:
+    setting4: "value4"

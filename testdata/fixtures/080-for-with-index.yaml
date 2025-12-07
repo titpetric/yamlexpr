@@ -1,0 +1,14 @@
+products: ["apple", "banana", "cherry"]
+items:
+  - for: (idx, item) in products
+    index_str: "${idx}"
+    value: "${item}"
+---
+products: ["apple", "banana", "cherry"]
+items:
+  - index_str: "0"
+    value: "apple"
+  - index_str: "1"
+    value: "banana"
+  - index_str: "2"
+    value: "cherry"

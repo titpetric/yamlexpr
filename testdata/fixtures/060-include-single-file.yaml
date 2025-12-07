@@ -1,0 +1,6 @@
+include: "_base-config.yaml"
+debug: true
+---
+name: "myapp"
+version: "1.0"
+debug: true

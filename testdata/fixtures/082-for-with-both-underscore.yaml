@@ -1,0 +1,10 @@
+items: ["apple", "banana", "cherry"]
+output:
+  - for: (_, _) in items
+    placeholder: "value"
+---
+items: ["apple", "banana", "cherry"]
+output:
+  - placeholder: "value"
+  - placeholder: "value"
+  - placeholder: "value"

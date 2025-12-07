@@ -1,0 +1,11 @@
+services:
+  - for:
+      - name: "frontend"
+        autoscale: true
+      - name: "backend"
+        autoscale: false
+    if: ${item.autoscale}
+    service_name: "${item.name}"
+---
+services:
+  - service_name: "frontend"

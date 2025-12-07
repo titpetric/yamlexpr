@@ -1,0 +1,17 @@
+settings:
+  database:
+    if: false
+    host: "localhost"
+    port: 5432
+    credentials:
+      user: "admin"
+      password: "secret"
+  cache:
+    if: true
+    ttl: 3600
+    backend: "redis"
+---
+settings:
+  cache:
+    ttl: 3600
+    backend: "redis"

@@ -1,0 +1,17 @@
+config:
+  name: "myapp"
+  debug: true
+  items:
+    - id: 1
+      title: "First"
+    - id: 2
+      title: "Second"
+---
+config:
+  name: "myapp"
+  debug: true
+  items:
+    - id: 1
+      title: "First"
+    - id: 2
+      title: "Second"

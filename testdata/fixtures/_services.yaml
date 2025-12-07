@@ -1,0 +1,7 @@
+services:
+  - name: "api"
+    enabled: true
+  - name: "worker"
+    enabled: false
+  - name: "scheduler"
+    enabled: true

@@ -1,0 +1,29 @@
+# Part 1: Fixture data (source data, not in output)
+companies:
+  - name: "Acme"
+    departments:
+      - "Engineering"
+      - "Sales"
+  - name: "TechCorp"
+    departments:
+      - "DevOps"
+      - "Marketing"
+---
+# Part 2: Template with for directives
+organizations:
+  - for: company in companies
+    organization_name: "${company.name}"
+    staff:
+      - for: dept in company.departments
+        department: "${dept}"
+---
+# Part 3: Expected result (processed output)
+organizations:
+  - organization_name: "Acme"
+    staff:
+      - department: "Engineering"
+      - department: "Sales"
+  - organization_name: "TechCorp"
+    staff:
+      - department: "DevOps"
+      - department: "Marketing"

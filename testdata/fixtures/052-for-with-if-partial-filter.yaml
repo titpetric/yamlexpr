@@ -1,0 +1,23 @@
+items:
+  - for:
+      - id: 1
+        category: "A"
+      - id: 2
+        category: "B"
+      - id: 3
+        category: "A"
+      - id: 4
+        category: "C"
+      - id: 5
+        category: "A"
+    if: item.category == 'A'
+    item_id: "${item.id}"
+    item_category: "${item.category}"
+---
+items:
+  - item_id: "1"
+    item_category: "A"
+  - item_id: "3"
+    item_category: "A"
+  - item_id: "5"
+    item_category: "A"

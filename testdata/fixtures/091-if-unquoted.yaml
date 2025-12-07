@@ -1,0 +1,16 @@
+# Part 1: Fixture data
+items:
+  - name: "item1"
+    active: true
+  - name: "item2"
+    active: false
+---
+# Part 2: Template with unquoted for and if directives
+output:
+  - for: item in items
+    if: item.active
+    name: "${item.name}"
+---
+# Part 3: Expected result
+output:
+  - name: "item1"

@@ -1,0 +1,14 @@
+config:
+  name: "production"
+  debug:
+    if: true
+    enabled: true
+    level: "verbose"
+  version: "1.0"
+---
+config:
+  name: "production"
+  debug:
+    enabled: true
+    level: "verbose"
+  version: "1.0"

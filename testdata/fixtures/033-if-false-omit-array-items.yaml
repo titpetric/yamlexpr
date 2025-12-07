@@ -1,0 +1,18 @@
+services:
+  - name: "api"
+    enabled: true
+  - name: "worker"
+    if: false
+    enabled: true
+  - name: "scheduler"
+    if: true
+    enabled: true
+  - name: "cache"
+    if: false
+    enabled: false
+---
+services:
+  - name: "api"
+    enabled: true
+  - name: "scheduler"
+    enabled: true

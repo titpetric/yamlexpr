@@ -1,0 +1,16 @@
+# Part 1: Fixture data
+items:
+  - name: "item1"
+    active: true
+  - name: "item2"
+    active: false
+---
+# Part 2: Template with negation operator (quoted because ! is YAML tag syntax)
+output:
+  - for: item in items
+    if: "!item.active"
+    name: "${item.name}"
+---
+# Part 3: Expected result (only inactive items)
+output:
+  - name: "item2"

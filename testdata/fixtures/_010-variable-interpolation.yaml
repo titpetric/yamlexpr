@@ -1,0 +1,11 @@
+name: "John"
+age: 30
+greeting: "Hello ${name}, you are ${age} years old"
+nested:
+  key: "The name is ${name}"
+---
+name: "John"
+age: 30
+greeting: "Hello John, you are 30 years old"
+nested:
+  key: "The name is John"

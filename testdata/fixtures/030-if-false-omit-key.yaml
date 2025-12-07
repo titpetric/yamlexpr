@@ -1,0 +1,10 @@
+config:
+  name: "production"
+  debug:
+    if: false
+    enabled: true
+  version: "1.0"
+---
+config:
+  name: "production"
+  version: "1.0"

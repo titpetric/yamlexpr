@@ -1,0 +1,13 @@
+include:
+  - "_base-config.yaml"
+  - "_database.yaml"
+logging:
+  level: "info"
+---
+name: "myapp"
+version: "1.0"
+database:
+  host: "localhost"
+  port: 5432
+logging:
+  level: "info"
