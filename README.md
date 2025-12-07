@@ -112,7 +112,6 @@ if err != nil {
 - [X] **Conditionals**: Include/exclude blocks with `if:` directive
 - [X] **For Loops**: Iterate and expand templates with `for:` directive
 - [X] **Composition**: Include external YAML files with `include:` directive
-- [X] **Scoped Variables**: Variables from root keys are automatically available
 
 ## API
 
@@ -127,7 +126,7 @@ config, err := expr.Load("config.yaml")
 
 ### Expr.Process(doc any) (any, error)
 
-Processes a YAML document (parsed as `map[string]any` or `[]any`) with expression evaluation. Root-level keys are available as variables for interpolation and conditionals.
+Processes a YAML document (parsed as `map[string]any` or `[]any`) with expression evaluation.
 
 ```go
 result, err := expr.Process(yamlData)
