@@ -1,178 +1,99 @@
 # yamlexpr Design Document
 
-## Overview
+## Purpose
 
-`yamlexpr` is a minimalist YAML composition and expression language for Go. It provides variable interpolation, conditionals, file composition, and loop expansion for YAML documents.
+YAML is a data format. `yamlexpr` adds evaluation capabilities to YAML: variable interpolation, conditionals, file composition, and loop expansion. This allows YAML to be used as a simple configuration or template format where values can be computed from variables.
 
-## Design Philosophy
+## Example
 
-### 1. Minimalism First
+Input YAML with variables:
+```yaml
+database:
+  host: ${db_host}
+  port: ${db_port}
+  
+servers: []
+for:
+  in: ${server_list}
+  as: server
+  do:
+    - name: ${server.name}
+      ip: ${server.ip}
 
-The stack package contains **only** the essential functionality needed for variable lookup and resolution:
+if: ${enable_debug}
+do:
+  debug: true
+```
 
-- No external dependencies (except stdlib)
-- Path-based resolution with caching (vuego/lessgo pattern)
-- Type-safe accessors for common types (GetString, GetInt, GetSlice, GetMap)
-- Pool-based map allocation for GC efficiency
+Variables supplied:
+```go
+stack := stack.New(map[string]any{
+  "db_host": "localhost",
+  "db_port": 5432,
+  "server_list": []map[string]any{
+    {"name": "web-1", "ip": "10.0.1.1"},
+    {"name": "web-2", "ip": "10.0.1.2"},
+  },
+  "enable_debug": true,
+})
 
-### 2. Reusable Stack Package
+expr := yamlexpr.New(fs, stack)
+output, err := expr.Evaluate(input)
+```
 
-The `stack` package is intentionally generic and dependency-free:
+Output: YAML with interpolations resolved, loops expanded, conditions evaluated.
 
-- Can be imported by vuego, lessgo, yamlexpr, or any other project
-- Uses only Go standard library
-- Caches path resolution to avoid repeated parsing
-- Provides stack-based scoping with push/pop semantics
-
-**Key difference from vuego's Stack:**
-- Removed struct field resolution (vuego-specific feature)
-- Removed rootData parameter (not needed for YAML)
-- Kept all core functionality: lookup, resolve, GetString/GetInt/GetSlice/GetMap
-
-### 3. Expression Package Separation
-
-The `expr` package handles YAML-specific concerns:
-
-- Document processing (maps and slices)
-- Interpolation (${varname} syntax)
-- Directives (planned: include, for, if)
-- File composition (planned)
-
-Kept separate from `stack` to maintain reusability.
-
-## Package Organization
+## Code Organization
 
 ```
 yamlexpr/
-├── stack/           # Reusable variable scope stack
-│   ├── stack.go
+├── stack/           # Variable scoping and resolution
+│   ├── stack.go     # Stack type for variable lookup
 │   └── stack_test.go
-├── expr/            # YAML expression evaluation
-│   ├── expr.go
-│   ├── expr_test.go
-│   ├── interpolate.go
-│   └── interpolate_test.go
-├── testdata/
-│   └── fixtures/    # Test fixtures with expected output
-└── AGENTS.md        # Development conventions
+├── expr.go          # Main Expr type for processing YAML documents
+├── context.go       # ExprContext carries evaluation state through processing
+├── interpolate.go   # Handles ${var} substitution in strings
+├── for_loop.go      # Expands for: directives
+├── util.go          # Helper functions
+└── testdata/fixtures/ # Test fixtures with input.yaml and input.yaml.expected
 ```
 
-## Feature Roadmap
+## Architecture
 
-### Done ✓
+**Stack package**: Variable scoping with path resolution (e.g., `user.name`, `items[0]`). Importable by any project needing variable lookup.
 
-1. **Stack-based variable scoping**
-   - Push/pop for nested scopes
-   - Variable shadowing
-   - Path resolution (user.name, items[0].title)
-   - Type conversions (GetString, GetInt, GetSlice, GetMap)
+**Root package**: YAML document processing. Depends on stack for variable resolution. Handles:
+- Parsing YAML into maps/slices
+- Processing include, for, if directives
+- Interpolating ${} syntax in strings
+- Maintaining ExprContext through the document tree for error reporting and path tracking
 
-2. **Variable interpolation**
-   - ${varname} syntax in strings
-   - Nested path support (${obj.path})
-   - Missing variable handling (returns placeholder)
+**ExprContext**: Carries evaluation state (stack, current path, include chain) through recursive processing functions.
 
-3. **Include composition**
-   - Load external YAML files
-   - Merge into current document
-   - Relative path resolution from fs.FS
+## Testing
 
-4. **For loops**
-   - Iterate over arrays
-   - Loop variable in scope
-   - Support for nested structures
-   - Index variable access
+Tests use black box style with exported APIs only. Each module has corresponding _test.go file:
+- `stack_test.go`: Stack API
+- `expr_test.go`: Expr type and main Evaluate() function
+- `context_test.go`: ExprContext API
+- `interpolate_test.go`: Interpolation behavior
+- `expr_fixtures_test.go`: Fixture-based integration tests
 
-5. **If conditions**
-   - Conditional inclusion/exclusion of blocks
-   - Direct boolean values and expressions
-   - Negation support
-   - Works with for loops and includes
-
-## Design Decisions
-
-### Why Pool-Based Maps?
-
-Reduces GC pressure when processing large documents with many scopes. Matching vuego's approach for consistency.
-
-### Why Separate Stack from Expr?
-
-The Stack package solves a general problem (variable scoping) useful across projects. The Expr package is YAML-specific and can import Stack.
-
-### Why ${} for Interpolation?
-
-- Unambiguous in YAML syntax
-- Matches template languages (Vue, Django)
-- Easy to parse with regex
-- Clear visual distinction from YAML syntax
-
-### Why Caching Path Resolution?
-
-Path parsing (user.name → [user, name]) is expensive. The cache (limited to 256 entries) significantly improves performance for repeated lookups of the same paths.
-
-### Why Fixture-Based Testing?
-
-Follows lessgo pattern:
-- Source of truth is on disk
-- Easy to add test cases
-- Clear input/output separation
-- Works with any serialization format (YAML, JSON, etc)
-
-## Integration Points
-
-### With Other Projects
-
-The `stack` package can be imported by:
-
-```go
-import "github.com/titpetric/yamlexpr/stack"
-
-s := stack.New(map[string]any{"x": 1})
-```
-
-## Testing Strategy
-
-### Black Box Testing
-
-All tests use exported APIs only:
-- `stack_test.go` tests Stack API
-- `expr_test.go` tests Expr API
-- `interpolate_test.go` tests interpolation
-
-### Fixture-Based Tests
-
-Will follow lessgo pattern with `---` delimiter:
-
+Fixtures are the source of truth. Format:
 ```yaml
-# Input
+# input.yaml
 items:
-  - ${name}
+  - name: ${item_name}
 ---
-# Expected output
+# input.yaml.expected
 items:
-  - John
+  - name: "resolved_value"
 ```
 
-Run with: `go test -v -run TestFixtures ./expr`
+Run: `go test ./...`
 
-## Future Improvements
+## Dependencies
 
-1. **YAML Parser Integration**
-   - Replace parseYAML stub with gopkg.in/yaml.v3
-   - Support both YAML input and output
-
-2. **Expression Evaluation**
-   - Integrate go-expr for if conditions
-   - Support for complex expressions
-
-3. **For Loop Implementation**
-   - Handle `for: items` syntax
-   - Loop variable (item, key) in stack
-
-4. **Error Messages**
-   - Include fixture path in errors
-   - Better context for debugging
-
-5. **Performance**
-   - Benchmark fixture processing
-   - Profile memory usage with large documents
+- `gopkg.in/yaml.v3`: YAML parsing and serialization
+- `github.com/expr-lang/expr`: Expression evaluation for if conditions
+- `github.com/stretchr/testify`: Test assertions
