@@ -12,7 +12,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                  | Coverage | Cognitive | Lines |
 |--------|--------------------------|----------|-----------|-------|
-| ❌     | titpetric/yamlexpr       | 76.25%   | 229       | 773   |
+| ❌     | titpetric/yamlexpr       | 76.25%   | 232       | 773   |
 | ❌     | titpetric/yamlexpr/stack | 78.07%   | 92        | 329   |
 
 ## Functions
@@ -20,7 +20,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | Status | Package                  | Function                         | Coverage | Cognitive |
 |--------|--------------------------|----------------------------------|----------|-----------|
 | ✅     | titpetric/yamlexpr       | Expr.Load                        | 69.20%   | 4         |
-| ✅     | titpetric/yamlexpr       | Expr.Process                     | 100.00%  | 1         |
+| ✅     | titpetric/yamlexpr       | Expr.Process                     | 100.00%  | 4         |
 | ✅     | titpetric/yamlexpr       | Expr.ProcessWithStack            | 75.00%   | 1         |
 | ❌     | titpetric/yamlexpr       | Expr.handleForWithContext        | 48.20%   | 42        |
 | ❌     | titpetric/yamlexpr       | Expr.handleIncludeWithContext    | 0.00%    | 11        |

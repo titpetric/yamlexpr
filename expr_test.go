@@ -44,10 +44,17 @@ func TestExpr_Process(t *testing.T) {
 	e := yamlexpr.New(nil)
 
 	doc := map[string]any{
-		"name":  "test",
+		"name":  "${user.name}",
 		"items": []any{"a", "b"},
 	}
-	result, err := e.Process(doc)
+
+	want := map[string]any{
+		"name":  "John",
+		"items": []any{"a", "b"},
+	}
+
+	got, err := e.Process(doc, map[string]any{"user": map[string]any{"name": "John"}})
+
 	require.NoError(t, err)
-	require.NotNil(t, result)
+	require.Equal(t, want, got)
 }

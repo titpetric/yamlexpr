@@ -63,7 +63,7 @@ func TestExpr_ProcessIfConditions(t *testing.T) {
 	e := New(nil)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := e.Process(tt.input)
+			result, err := e.Process(tt.input, nil)
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, result)
 		})
@@ -153,7 +153,7 @@ func TestExpr_ProcessForLoops(t *testing.T) {
 	e := New(nil)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := e.Process(tt.input)
+			result, err := e.Process(tt.input, nil)
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, result)
 		})
@@ -194,7 +194,7 @@ func TestExpr_ProcessForWithIf(t *testing.T) {
 	e := New(nil)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := e.Process(tt.input)
+			result, err := e.Process(tt.input, nil)
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, result)
 		})

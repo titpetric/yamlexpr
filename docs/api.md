@@ -61,7 +61,7 @@ type ForLoopExpr struct {
 - `func New (rootFS fs.FS) *Expr`
 - `func NewExprContext (options *ExprContextOptions) *ExprContext`
 - `func (*Expr) Load (filename string) (map[string]any, error)`
-- `func (*Expr) Process (doc any) (any, error)`
+- `func (*Expr) Process (doc any, rootVars map[string]any) (any, error)`
 - `func (*Expr) ProcessWithStack (doc any, st *stack.Stack) (any, error)`
 - `func (*ExprContext) AppendPath (segment string) *ExprContext`
 - `func (*ExprContext) FormatIncludeChain () string`
@@ -101,7 +101,7 @@ func (*Expr) Load(filename string) (map[string]any, error)
 Process processes a YAML document (any) with expression evaluation. Handles for loops, if conditions, includes, and variable interpolation. Root-level keys in the document are available as variables.
 
 ```go
-func (*Expr) Process(doc any) (any, error)
+func (*Expr) Process(doc any, rootVars map[string]any) (any, error)
 ```
 
 ### ProcessWithStack

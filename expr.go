@@ -26,17 +26,17 @@ func New(rootFS fs.FS) *Expr {
 // Process processes a YAML document (any) with expression evaluation.
 // Handles for loops, if conditions, includes, and variable interpolation.
 // Root-level keys in the document are available as variables.
-func (e *Expr) Process(doc any) (any, error) {
-	// Initialize stack with root document as variables
-	rootVars := make(map[string]any)
+func (e *Expr) Process(doc any, rootVars map[string]any) (any, error) {
+	if rootVars == nil {
+		rootVars = make(map[string]any)
+	}
 	if rootMap, ok := doc.(map[string]any); ok {
-		rootVars = rootMap
+		for k, v := range rootMap {
+			rootVars[k] = v
+		}
 	}
 
-	ctx := NewExprContext(&ExprContextOptions{
-		Stack: stack.New(rootVars),
-	})
-	return e.processWithContext(ctx, doc)
+	return e.ProcessWithStack(doc, stack.New(rootVars))
 }
 
 // Load loads a YAML file and processes it with expression evaluation.
@@ -55,7 +55,7 @@ func (e *Expr) Load(filename string) (map[string]any, error) {
 	}
 
 	// Process the document
-	result, err := e.Process(parsed)
+	result, err := e.Process(parsed, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error processing file %s: %w", filename, err)
 	}

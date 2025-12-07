@@ -4,8 +4,7 @@
 
 YAML is a data format.
 
-The package `yamlexpr` adds evaluation capabilities to YAML: variable interpolation, conditionals, file composition, and loop expansion.
-This allows YAML to be used as a simple configuration or template format where values can be computed from variables.
+The package `yamlexpr` adds evaluation capabilities to YAML: variable interpolation, conditionals, file composition, and loop expansion. This allows YAML to be used as a simple configuration or template format where values can be computed from variables.
 
 For syntax details, see [Syntax Reference](syntax.md).
 

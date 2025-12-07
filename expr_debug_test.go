@@ -36,7 +36,7 @@ func TestDebugForWithIf(t *testing.T) {
 	st.Pop()
 
 	// Now test the full process
-	result, err := e.Process(input)
+	result, err := e.Process(input, nil)
 	require.NoError(t, err)
 	t.Logf("Result: %v", result)
 }
