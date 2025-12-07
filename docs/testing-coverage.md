@@ -19,7 +19,6 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                  | Function                         | Coverage | Cognitive |
 |--------|--------------------------|----------------------------------|----------|-----------|
-| ✅     | titpetric/yamlexpr       | ContainsInterpolation            | 100.00%  | 1         |
 | ✅     | titpetric/yamlexpr       | Expr.Load                        | 69.20%   | 4         |
 | ✅     | titpetric/yamlexpr       | Expr.Process                     | 100.00%  | 1         |
 | ✅     | titpetric/yamlexpr       | Expr.ProcessWithStack            | 75.00%   | 1         |
@@ -37,17 +36,18 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/yamlexpr       | ExprContext.Stack                | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr       | ExprContext.WithInclude          | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr       | ExprContext.WithPath             | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr       | InterpolateString                | 66.70%   | 1         |
 | ✅     | titpetric/yamlexpr       | New                              | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr       | NewExprContext                   | 100.00%  | 3         |
-| ✅     | titpetric/yamlexpr       | ParseForExpr                     | 95.20%   | 13        |
+| ✅     | titpetric/yamlexpr       | containsInterpolation            | 100.00%  | 1         |
 | ❌     | titpetric/yamlexpr       | evaluateConditionWithPath        | 54.50%   | 23        |
 | ✅     | titpetric/yamlexpr       | interpolateString                | 88.90%   | 5         |
+| ✅     | titpetric/yamlexpr       | interpolateStringHelper          | 66.70%   | 1         |
 | ❌     | titpetric/yamlexpr       | interpolateStringWithContext     | 65.40%   | 15        |
 | ✅     | titpetric/yamlexpr       | isQuoted                         | 100.00%  | 3         |
 | ✅     | titpetric/yamlexpr       | isTruthy                         | 22.20%   | 1         |
 | ✅     | titpetric/yamlexpr       | isValidVarName                   | 75.00%   | 1         |
 | ❌     | titpetric/yamlexpr       | mergeRecursive                   | 0.00%    | 31        |
+| ✅     | titpetric/yamlexpr       | parseForExpr                     | 95.20%   | 13        |
 | ✅     | titpetric/yamlexpr       | parseYAML                        | 75.00%   | 1         |
 | ✅     | titpetric/yamlexpr       | quoteUnquotedComparisons         | 84.60%   | 16        |
 | ✅     | titpetric/yamlexpr/stack | New                              | 100.00%  | 1         |

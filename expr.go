@@ -315,7 +315,7 @@ func (e *Expr) handleForWithContext(ctx *ExprContext, forExpr any, m map[string]
 	case string:
 		// Parse as new for expression (e.g., "item in items" or "(idx, item) in items")
 		var err error
-		loopVars, err = ParseForExpr(v)
+		loopVars, err = parseForExpr(v)
 		if err != nil {
 			pathCtx := ""
 			if ctx.Path() != "" {

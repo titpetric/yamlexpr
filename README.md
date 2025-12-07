@@ -1,9 +1,6 @@
 # yamlexpr
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/yamlexpr.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr)
-[![Go Report Card](https://goreportcard.com/badge/github.com/titpetric/yamlexpr)](https://goreportcard.com/report/github.com/titpetric/yamlexpr)
-[![PkgGoDev](https://img.shields.io/badge/docs-pkg.go.dev-blue.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr)
-[![Test Coverage](https://img.shields.io/badge/coverage-76.25%25-yellow)](docs/testing-coverage.md)
+[![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/yamlexpr.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr) [![Go Report Card](https://goreportcard.com/badge/github.com/titpetric/yamlexpr)](https://goreportcard.com/report/github.com/titpetric/yamlexpr) [![PkgGoDev](https://img.shields.io/badge/docs-pkg.go.dev-blue.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr) [![Test Coverage](https://img.shields.io/badge/coverage-76.25%25-yellow)](docs/testing-coverage.md)
 
 YAML composition, interpolation, and conditional evaluation for Go.
 
@@ -110,11 +107,11 @@ if err != nil {
 
 ## Features
 
-- **Variable Interpolation**: Use `${variable.path}` syntax in string values
-- **Conditionals**: Include/exclude blocks with `if:` directive
-- **For Loops**: Iterate and expand templates with `for:` directive
-- **Composition**: Include external YAML files with `include:` directive
-- **Scoped Variables**: Variables from root keys are automatically available
+- [x] **Variable Interpolation**: Use `${variable.path}` syntax in string values
+- [x] **Conditionals**: Include/exclude blocks with `if:` directive
+- [x] **For Loops**: Iterate and expand templates with `for:` directive
+- [x] **Composition**: Include external YAML files with `include:` directive
+- [x] **Scoped Variables**: Variables from root keys are automatically available
 
 ## API
 

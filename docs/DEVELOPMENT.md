@@ -19,6 +19,7 @@ Each feature transitions through these states:
 3. Create a new todo item in this session if needed
 
 Example:
+
 ```markdown
 - [ ] **Feature 1 (doing)**: Include composition
   - Placeholder items to complete
@@ -89,7 +90,9 @@ Before marking as `done`, verify:
 - [ ] AGENTS.md section updated if conventions changed
 
 ### Final Step
+
 When all above complete:
+
 ```markdown
 - [x] **Feature N (done)**: Description
   - [x] Implementation complete
@@ -102,12 +105,14 @@ When all above complete:
 ## Example: Implementing Feature 1 (Include Composition)
 
 ### Step 1: Update README (waiting → doing)
+
 ```bash
 # Edit README.md
 - [ ] **Feature 1 (doing)**: Include composition
 ```
 
 ### Step 2: Create Fixtures
+
 ```bash
 # testdata/fixtures/020-include-single-file.yaml
 config:
@@ -130,30 +135,33 @@ files:
 ```
 
 ### Step 3: Add Tests
+
 ```go
 // expr/expr_fixtures_test.go
 func TestFixtures(t *testing.T) {
-  fixtures := []string{
-    "020-include-single-file",
-    "021-include-list",
-  }
-  // Load and test each fixture
+	fixtures := []string{
+		"020-include-single-file",
+		"021-include-list",
+	}
+	// Load and test each fixture
 }
 ```
 
 ### Step 4: Implement Feature
+
 ```go
 // expr/expr.go - update stubs
 func (e *Expr) handleInclude(incl any, result map[string]any, st *stack.Stack) error {
-  // Implement include logic
+	// Implement include logic
 }
 
 func (e *Expr) loadAndMergeFile(filename string, result map[string]any, st *stack.Stack) error {
-  // Implement file loading
+	// Implement file loading
 }
 ```
 
 ### Step 5: Run Tests
+
 ```bash
 go test -v ./expr
 ```
@@ -171,6 +179,7 @@ go test -v ./expr
 - Documentation: ✓ README, DESIGN.md, comments updated
 
 ### Step 8: Mark Done
+
 ```markdown
 - [x] **Feature 1 (done)**: Include composition
   - [x] File loading from fs.FS

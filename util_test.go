@@ -1,14 +1,53 @@
-package yamlexpr_test
+package yamlexpr
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/titpetric/yamlexpr"
+	"github.com/titpetric/yamlexpr/stack"
 )
 
-// TestParseForExpr tests the for loop expression parser.
+// TestInterpolateString tests the internal interpolateStringHelper function.
+func TestInterpolateString(t *testing.T) {
+	st := stack.New(map[string]any{
+		"name": "John",
+		"age":  30,
+		"user": map[string]any{
+			"email": "john@example.com",
+		},
+	})
+
+	// Simple interpolation
+	result := interpolateStringHelper("Hello ${name}", st)
+	require.Equal(t, "Hello John", result)
+
+	// Multiple interpolations
+	result = interpolateStringHelper("${name} is ${age} years old", st)
+	require.Equal(t, "John is 30 years old", result)
+
+	// Nested path
+	result = interpolateStringHelper("Email: ${user.email}", st)
+	require.Equal(t, "Email: john@example.com", result)
+
+	// Missing variable
+	result = interpolateStringHelper("Hello ${missing}", st)
+	require.Equal(t, "Hello ${missing}", result)
+
+	// No interpolation
+	result = interpolateStringHelper("No variables here", st)
+	require.Equal(t, "No variables here", result)
+}
+
+// TestContainsInterpolation tests the internal containsInterpolation function.
+func TestContainsInterpolation(t *testing.T) {
+	require.True(t, containsInterpolation("Hello ${name}"))
+	require.False(t, containsInterpolation("Hello name"))
+	require.False(t, containsInterpolation("${unclosed"))
+	require.False(t, containsInterpolation("${"))
+}
+
+// TestParseForExpr tests the internal parseForExpr function.
 func TestParseForExpr(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -125,7 +164,7 @@ func TestParseForExpr(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			forExpr, err := yamlexpr.ParseForExpr(tt.input)
+			forExpr, err := parseForExpr(tt.input)
 
 			if tt.wantErr {
 				require.Error(t, err)

@@ -58,11 +58,8 @@ type ForLoopExpr struct {
 
 ## Function symbols
 
-- `func ContainsInterpolation (s string) bool`
-- `func InterpolateString (s string, st *stack.Stack) string`
 - `func New (rootFS fs.FS) *Expr`
 - `func NewExprContext (options *ExprContextOptions) *ExprContext`
-- `func ParseForExpr (expr string) (*ForLoopExpr, error)`
 - `func (*Expr) Load (filename string) (map[string]any, error)`
 - `func (*Expr) Process (doc any) (any, error)`
 - `func (*Expr) ProcessWithStack (doc any, st *stack.Stack) (any, error)`
@@ -74,22 +71,6 @@ type ForLoopExpr struct {
 - `func (*ExprContext) Stack () *stack.Stack`
 - `func (*ExprContext) WithInclude (filename string) *ExprContext`
 - `func (*ExprContext) WithPath (newPath string) *ExprContext`
-
-### ContainsInterpolation
-
-ContainsInterpolation checks if a string contains ${...} patterns.
-
-```go
-func ContainsInterpolation(s string) bool
-```
-
-### InterpolateString
-
-InterpolateString is a helper to interpolate a single string without a full Expr instance.
-
-```go
-func InterpolateString(s string, st *stack.Stack) string
-```
 
 ### New
 
@@ -105,19 +86,6 @@ NewExprContext returns an ExprContext initialized for the given options.
 
 ```go
 func NewExprContext(options *ExprContextOptions) *ExprContext
-```
-
-### ParseForExpr
-
-ParseForExpr parses a for loop expression string. Supports:
-- "item in items" - iterates over items, binding each to 'item'
-- "item in item.subitems" - iterate over nested path
-- "(idx, item) in items" - iterates over items, binding index to 'idx' and item to 'item'
-- "(key, value) in items" - for map iteration
-- "_" can be used to omit a variable
-
-```go
-func ParseForExpr(expr string) (*ForLoopExpr, error)
 ```
 
 ### Load

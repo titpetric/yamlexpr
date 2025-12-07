@@ -27,7 +27,7 @@ func TestDebugForWithIf(t *testing.T) {
 
 	// Test interpolation with item
 	st.Push(map[string]any{"item": map[string]any{"name": "api", "active": true}})
-	interp := InterpolateString("${item.active}", st)
+	interp := interpolateStringHelper("${item.active}", st)
 	t.Logf("Interpolated '${item.active}' -> '%s'", interp)
 
 	cond, err := evaluateConditionWithPath("${item.active}", st, "")
