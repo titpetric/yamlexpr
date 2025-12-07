@@ -1,8 +1,8 @@
-# yaml-expr
+# yamlexpr
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/yaml-expr.svg)](https://pkg.go.dev/github.com/titpetric/yaml-expr)
-[![Go Report Card](https://goreportcard.com/badge/github.com/titpetric/yaml-expr)](https://goreportcard.com/report/github.com/titpetric/yaml-expr)
-[![PkgGoDev](https://img.shields.io/badge/docs-pkg.go.dev-blue.svg)](https://pkg.go.dev/github.com/titpetric/yaml-expr)
+[![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/yamlexpr.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr)
+[![Go Report Card](https://goreportcard.com/badge/github.com/titpetric/yamlexpr)](https://goreportcard.com/report/github.com/titpetric/yamlexpr)
+[![PkgGoDev](https://img.shields.io/badge/docs-pkg.go.dev-blue.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr)
 
 YAML composition, interpolation, and conditional evaluation for Go.
 
