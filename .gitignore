@@ -13,6 +13,10 @@
 
 # Code coverage profiles and other test artifacts
 *.out
+*.bak
+*.txt
+*.json
+*.cov
 coverage.*
 *.coverprofile
 profile.cov
