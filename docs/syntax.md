@@ -159,7 +159,7 @@ Features can be combined in a single YAML document:
 include: "_base.yaml"
 
 services:
-  - for: ${service_list}
+  - for: item in service_list
     if: item.enabled
     name: "${item.name}"
     config:
