@@ -6,6 +6,7 @@ YAML composition, interpolation, and conditional evaluation for Go.
 
 ## Documentation
 
+- **[Syntax Reference](docs/syntax.md)** - Complete guide to `include`, `for`, and `if` directives
 - **[API Reference](docs/api.md)** - Complete API documentation
 - **[Design Document](docs/DESIGN.md)** - Architecture and design decisions
 - **[Development Guide](docs/DEVELOPMENT.md)** - Development workflow and feature implementation

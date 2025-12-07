@@ -8,21 +8,20 @@ YAML is a data format. `yamlexpr` adds evaluation capabilities to YAML: variable
 
 Input YAML with variables:
 ```yaml
+include: "_base.yaml"
 database:
   host: ${db_host}
   port: ${db_port}
-  
-servers: []
-for:
-  in: ${server_list}
-  as: server
-  do:
-    - name: ${server.name}
-      ip: ${server.ip}
 
-if: ${enable_debug}
-do:
-  debug: true
+servers:
+  - for: ${server_list}
+    if: item.enabled
+    name: ${item.name}
+    ip: ${item.ip}
+
+debug:
+  if: ${enable_debug}
+  level: "verbose"
 ```
 
 Variables supplied:
@@ -31,8 +30,8 @@ stack := stack.New(map[string]any{
   "db_host": "localhost",
   "db_port": 5432,
   "server_list": []map[string]any{
-    {"name": "web-1", "ip": "10.0.1.1"},
-    {"name": "web-2", "ip": "10.0.1.2"},
+    {"name": "web-1", "ip": "10.0.1.1", "enabled": true},
+    {"name": "web-2", "ip": "10.0.1.2", "enabled": false},
   },
   "enable_debug": true,
 })
@@ -41,7 +40,7 @@ expr := yamlexpr.New(fs, stack)
 output, err := expr.Evaluate(input)
 ```
 
-Output: YAML with interpolations resolved, loops expanded, conditions evaluated.
+Output: YAML with includes merged, interpolations resolved, loops expanded, and conditions evaluated. For syntax details, see [Syntax Reference](syntax.md).
 
 ## Code Organization
 
