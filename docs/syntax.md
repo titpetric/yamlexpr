@@ -2,7 +2,7 @@
 
 This document describes the special YAML directives supported by yamlexpr: `include`, `for`, and `if`.
 
-## Variable Interpolation
+## Variable Interpolation with `${variable}`
 
 Any string value can include variable substitution using `${variable}` syntax:
 
@@ -11,107 +11,39 @@ message: "Hello, ${name}!"
 path: "/users/${user_id}/profile"
 ```
 
-Variables are resolved from the stack context. You can access nested values using dot notation:
+This was chosen to enable yaml parsing for `value: ${variable}` ; omitting the `$` sign causes a parsing issue, where the parser starts to expect an object due to `{}`.
+
+This is inspired by GitHub actions.
+
+## Including files with `include`
+
+To enable composition, you can use the `include` statement at any level of the YAML.
 
 ```yaml
-greeting: "Welcome ${user.name} to ${application.title}"
+include: _base.yaml
+
+settings:
+  include: _settings.yml
 ```
 
-## Include Directive
+Files are resolved relative to the base directory provided to `yamlexpr.New()`.
 
-The `include` directive pulls in external YAML files and merges them into the current document.
-
-### Single File
-
-```yaml
-include: "_base-config.yaml"
-debug: true
-```
-
-The base config is merged, then the `debug: true` key is added.
-
-### Multiple Files
-
-```yaml
-include:
-  - "_base-config.yaml"
-  - "_database.yaml"
-logging:
-  level: "info"
-```
-
-Files are resolved relative to the base directory provided to `Expr.New()`.
-
-## For Loop
+## Looping with `for`
 
 The `for` directive expands an array by iterating over values and creating multiple items.
 
-### Simple Loop
+Loops allow the following syntax:
 
-Iterate over array values, available as `${item}`:
+- `for: item in items`
+- `for: (index, item) in items`
 
-```yaml
-users:
-  - for: ["alice", "bob", "charlie"]
-    name: "${item}"
-    active: true
-```
-
-Result:
-```yaml
-users:
-  - name: "alice"
-    active: true
-  - name: "bob"
-    active: true
-  - name: "charlie"
-    active: true
-```
-
-### Looping Over Inline Arrays
-
-You can also reference a variable or inline array literal:
+Use the syntax to access both index and value as needed:
 
 ```yaml
-items:
-  - for: ${product_list}
-    sku: "${item.id}"
-    price: ${item.cost}
-```
-
-### Loop with Index
-
-Use the `(idx, item) in` syntax to access both index and value:
-
-```yaml
-products: ["apple", "banana", "cherry"]
 items:
   - for: (idx, item) in products
     index_str: "${idx}"
     value: "${item}"
-```
-
-Result:
-```yaml
-products: ["apple", "banana", "cherry"]
-items:
-  - index_str: "0"
-    value: "apple"
-  - index_str: "1"
-    value: "banana"
-  - index_str: "2"
-    value: "cherry"
-```
-
-### Ignoring Index or Item
-
-Use underscore `_` to skip a variable:
-
-```yaml
-names: ["alice", "bob", "charlie"]
-output:
-  - for: (_, name) in names
-    person: "${name}"
 ```
 
 ### Filtering with If
@@ -120,22 +52,9 @@ Combine `for` with `if` to filter items:
 
 ```yaml
 enabled_services:
-  - for:
-      - name: "api"
-        active: true
-      - name: "worker"
-        active: false
-      - name: "scheduler"
-        active: true
+  - for: item in items
     if: item.active
     service: "${item.name}"
-```
-
-Result:
-```yaml
-enabled_services:
-  - service: "api"
-  - service: "scheduler"
 ```
 
 Only items where `item.active` is true are included.
@@ -150,6 +69,7 @@ items:
 ```
 
 Result:
+
 ```yaml
 items: []
 ```
@@ -170,6 +90,7 @@ config:
 ```
 
 Result:
+
 ```yaml
 config:
   name: "production"
@@ -191,6 +112,7 @@ config:
 ```
 
 Result:
+
 ```yaml
 config:
   name: "production"
@@ -214,23 +136,6 @@ When `if: true`, the `if` directive itself is removed and the remaining keys are
   - `if: name != "admin"` (equality)
   - `if: !disabled` (negation)
   - `if: status == "active" && verified` (logic operators)
-
-### If with For
-
-When `if` appears alongside `for`, the condition filters each item:
-
-```yaml
-enabled_services:
-  - for:
-      - name: "api"
-        active: true
-      - name: "worker"
-        active: false
-    if: item.active
-    service: "${item.name}"
-```
-
-Only items matching the condition are expanded.
 
 ### If with Nested Keys
 
@@ -263,6 +168,7 @@ services:
 ```
 
 This example:
+
 1. Includes a base config file
 2. Loops over a service list
 3. Filters services based on the `enabled` flag

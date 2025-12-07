@@ -108,11 +108,11 @@ if err != nil {
 
 ## Features
 
-- [x] **Variable Interpolation**: Use `${variable.path}` syntax in string values
-- [x] **Conditionals**: Include/exclude blocks with `if:` directive
-- [x] **For Loops**: Iterate and expand templates with `for:` directive
-- [x] **Composition**: Include external YAML files with `include:` directive
-- [x] **Scoped Variables**: Variables from root keys are automatically available
+- [X] **Variable Interpolation**: Use `${variable.path}` syntax in string values
+- [X] **Conditionals**: Include/exclude blocks with `if:` directive
+- [X] **For Loops**: Iterate and expand templates with `for:` directive
+- [X] **Composition**: Include external YAML files with `include:` directive
+- [X] **Scoped Variables**: Variables from root keys are automatically available
 
 ## API
 

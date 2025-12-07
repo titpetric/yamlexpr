@@ -2,45 +2,12 @@
 
 ## Purpose
 
-YAML is a data format. `yamlexpr` adds evaluation capabilities to YAML: variable interpolation, conditionals, file composition, and loop expansion. This allows YAML to be used as a simple configuration or template format where values can be computed from variables.
+YAML is a data format.
 
-## Example
+The package `yamlexpr` adds evaluation capabilities to YAML: variable interpolation, conditionals, file composition, and loop expansion.
+This allows YAML to be used as a simple configuration or template format where values can be computed from variables.
 
-Input YAML with variables:
-```yaml
-include: "_base.yaml"
-database:
-  host: ${db_host}
-  port: ${db_port}
-
-servers:
-  - for: ${server_list}
-    if: item.enabled
-    name: ${item.name}
-    ip: ${item.ip}
-
-debug:
-  if: ${enable_debug}
-  level: "verbose"
-```
-
-Variables supplied:
-```go
-stack := stack.New(map[string]any{
-  "db_host": "localhost",
-  "db_port": 5432,
-  "server_list": []map[string]any{
-    {"name": "web-1", "ip": "10.0.1.1", "enabled": true},
-    {"name": "web-2", "ip": "10.0.1.2", "enabled": false},
-  },
-  "enable_debug": true,
-})
-
-expr := yamlexpr.New(fs, stack)
-output, err := expr.Evaluate(input)
-```
-
-Output: YAML with includes merged, interpolations resolved, loops expanded, and conditions evaluated. For syntax details, see [Syntax Reference](syntax.md).
+For syntax details, see [Syntax Reference](syntax.md).
 
 ## Code Organization
 
@@ -72,6 +39,7 @@ yamlexpr/
 ## Testing
 
 Tests use black box style with exported APIs only. Each module has corresponding _test.go file:
+
 - `stack_test.go`: Stack API
 - `expr_test.go`: Expr type and main Evaluate() function
 - `context_test.go`: ExprContext API
@@ -79,6 +47,7 @@ Tests use black box style with exported APIs only. Each module has corresponding
 - `expr_fixtures_test.go`: Fixture-based integration tests
 
 Fixtures are the source of truth. Format:
+
 ```yaml
 # input.yaml
 items:
