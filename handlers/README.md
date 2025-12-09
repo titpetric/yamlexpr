@@ -4,15 +4,15 @@ Custom directive handlers for yamlexpr, providing extensible YAML composition fu
 
 ## Built-in Handlers
 
-### include
+### embed
 File composition and merging. Loads external YAML files and merges their content.
 
 **Priority:** 1000 (highest - runs first)
 **Usage:** 
 ```yaml
-include: "base.yaml"
+embed: "base.yaml"
 # or
-include:
+embed:
   - "base.yaml"
   - "overrides.yaml"
 ```

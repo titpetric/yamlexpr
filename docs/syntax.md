@@ -1,6 +1,6 @@
 # yamlexpr Syntax Reference
 
-This document describes the special YAML directives supported by yamlexpr: `embed`, `for`, and `if`.
+yamlexpr provides several directives and features for YAML composition, conditional evaluation, and variable interpolation.
 
 ## Variable Interpolation with `${variable}`
 
@@ -9,167 +9,269 @@ Any string value can include variable substitution using `${variable}` syntax:
 ```yaml
 message: "Hello, ${name}!"
 path: "/users/${user_id}/profile"
+config_file: ${config_path}
 ```
 
-This was chosen to enable yaml parsing for `value: ${variable}` ; omitting the `$` sign causes a parsing issue, where the parser starts to expect an object due to `{}`.
+Variables are resolved from the stack (root-level keys or passed variables). Undefined variables in lenient mode are left unchanged; in strict mode they produce an error.
 
-This is inspired by GitHub actions.
+**Note:** The `${}` syntax was chosen to enable proper YAML parsing. Without the `$` sign, `{variable}` causes parsing issues where the parser expects an object.
 
-## Embedding files with `embed`
+**Inspiration:** This syntax is inspired by GitHub Actions.
 
-To enable composition, you can use the `embed` statement at any level of the YAML.
+## Directives (Handlers)
+
+Directives are special YAML keys that control document processing. They can be combined and nested for powerful composition patterns.
+
+### `embed` - File Composition
+
+The `embed` directive loads external YAML files and merges their content into the current structure.
+
+**Basic usage:**
 
 ```yaml
-embed: _base.yaml
-
-settings:
-  embed: _settings.yml
+embed: "base.yaml"
 ```
 
-Files are resolved relative to the base directory provided to `yamlexpr.New()`.
+**Multiple files:**
 
-## Looping with `for`
+```yaml
+embed:
+  - "base.yaml"
+  - "overrides.yaml"
+```
+
+Files are resolved relative to the base directory provided to `yamlexpr.New()`. Files are processed in order and merged together.
+
+**Example:**
+
+```yaml
+# config.yaml
+embed: "_defaults.yaml"
+
+settings:
+  debug: true
+  port: 8080
+```
+
+The resulting document will have all keys from `_defaults.yaml` merged with the keys from `config.yaml`, with `config.yaml` taking precedence.
+
+### `for` - Loop Expansion
 
 The `for` directive expands an array by iterating over values and creating multiple items.
 
-Loops allow the following syntax:
+**Basic syntax:**
 
-- `for: item in items`
-- `for: (index, item) in items`
+- `for: item in items` - Iterate over items with single variable
+- `for: (idx, item) in items` - Iterate with both index and item
 
-Use the syntax to access both index and value as needed:
+**Single variable:**
+
+```yaml
+steps:
+  - for: step in workflow_steps
+    name: "${step.name}"
+    run: "${step.command}"
+```
+
+**With index and value:**
 
 ```yaml
 items:
   - for: (idx, item) in products
-    index_str: "${idx}"
-    value: "${item}"
+    position: "${idx}"
+    name: "${item.name}"
+    price: "${item.price}"
 ```
 
-### Filtering with If
-
-Combine `for` with `if` to filter items:
-
-```yaml
-enabled_services:
-  - for: item in items
-    if: item.active
-    service: "${item.name}"
-```
-
-Only items where `item.active` is true are included.
-
-### Empty Array
-
-Looping over an empty array produces no output:
+**Omitting variables with `_`:**
 
 ```yaml
 items:
-  - for: []
+  - for: (_, item) in products
+    name: "${item.name}"
 ```
 
-Result:
+### `if` - Conditional Inclusion
 
-```yaml
-items: []
-```
+The `if` directive includes or omits a block based on a boolean condition.
 
-## If Conditional
-
-The `if` directive includes or omits a key based on a boolean condition.
-
-### Omit Key on False
+**Boolean values:**
 
 ```yaml
 config:
-  name: "production"
-  debug:
-    if: false
-    enabled: true
-  version: "1.0"
-```
-
-Result:
-
-```yaml
-config:
-  name: "production"
-  version: "1.0"
-```
-
-The `debug` key is removed entirely because `if: false`.
-
-### Include Key on True
-
-```yaml
-config:
-  name: "production"
   debug:
     if: true
-    enabled: true
     level: "verbose"
-  version: "1.0"
+  production:
+    if: false
+    optimized: true
 ```
 
-Result:
+When `if: false`, the key is removed from the output entirely.
+
+**Variable references:**
 
 ```yaml
 config:
-  name: "production"
-  debug:
-    enabled: true
-    level: "verbose"
-  version: "1.0"
+  experimental_feature:
+    if: ${enable_experimental}
+    description: "This is an experimental feature"
 ```
 
-When `if: true`, the `if` directive itself is removed and the remaining keys are included.
+**Expression-based conditions:**
 
-### Condition Expressions
+Using [expr-lang library](https://github.com/expr-lang/expr) for complex expressions:
 
-`if` conditions are evaluated as boolean expressions:
+```yaml
+services:
+  - for: item in services
+    if: item.enabled
+    name: "${item.name}"
+  
+  - for: item in services
+    if: item.port > 1024
+    name: "${item.name}"
+    port: "${item.port}"
 
-- Boolean values: `if: true`, `if: false`
-- Variable references: `if: ${enable_feature}`
-- Expressions using the [expr-lang library](https://github.com/expr-lang/expr):
-  - `if: item.active` (field access)
-  - `if: count > 5` (comparisons)
-  - `if: name != "admin"` (equality)
-  - `if: !disabled` (negation)
-  - `if: status == "active" && verified` (logic operators)
+  - for: item in services
+    if: item.status == "active" && item.verified
+    name: "${item.name}"
+```
 
-### If with Nested Keys
+**Supported expressions:**
 
-If the `if` key is on a map, that entire map is included/omitted:
+- Field access: `item.active`
+- Comparisons: `count > 5`, `status == "active"`, `port != 8080`
+- Logical operators: `&&`, `||`, `!`
+- Arithmetic: `count + 1`, `price * 0.9`
+- Function calls: `len(items) > 0`
+
+### `discard` - Inverse Conditional
+
+The `discard` directive is the opposite of `if` - it removes a block when true.
 
 ```yaml
 config:
-  database:
-    if: ${use_postgres}
-    host: "localhost"
-    port: 5432
+  deprecated_key:
+    discard: true
+    value: "this will be removed"
+  
+  active_key:
+    discard: false
+    value: "this will be kept"
 ```
 
-If `use_postgres` is false, the entire `database` key is removed.
+This is useful when you want to express logic as "remove if X" rather than "keep if not X".
+
+### `matrix` - Cartesian Product Expansion
+
+The `matrix` directive expands jobs or configurations across multiple dimensions (inspired by GitHub Actions).
+
+**Basic usage:**
+
+```yaml
+jobs:
+  test:
+    matrix:
+      os: [linux, macos, windows]
+      version: [1.20, 1.21]
+    runs_on: "${matrix.os}"
+    go_version: "${matrix.version}"
+```
+
+Expands to 6 job combinations (3 OS × 2 versions).
+
+**With exclude:**
+
+```yaml
+matrix:
+  os: [linux, macos, windows]
+  arch: [x86_64, arm64]
+  exclude:
+    - os: windows
+      arch: arm64
+```
+
+Removes specific combinations.
+
+**With include:**
+
+```yaml
+matrix:
+  os: [linux, windows]
+  include:
+    - os: macos
+      arch: arm64
+      xcode: "14"
+```
+
+Adds extra combinations that don't fit the cartesian product.
 
 ## Combined Features
 
-Features can be combined in a single YAML document:
+Directives can be combined in a single YAML document for powerful composition patterns:
 
 ```yaml
 embed: "_base.yaml"
 
 services:
-   - for: item in service_list
-     if: item.enabled
-     name: "${item.name}"
-     config:
-       embed: "_service-defaults.yaml"
-       port: ${item.port}
+  - for: item in service_list
+    if: item.enabled
+    name: "${item.name}"
+    image: "${item.image}"
+    ports:
+      - for: port in item.ports
+        port: "${port}"
+    config:
+      embed: "_service-defaults.yaml"
+      environment:
+        SERVICE_PORT: "${item.port}"
+        SERVICE_NAME: "${item.name}"
+    healthcheck:
+      if: ${item.enable_healthcheck}
+      path: "${item.healthcheck_path}"
 ```
 
 This example:
 
-1. Embeds a base config file
+1. Embeds a base configuration
 2. Loops over a service list
 3. Filters services based on the `enabled` flag
-4. For each service, embeds default settings and applies service-specific port
+4. For each service, embeds default settings
+5. Expands ports with another nested loop
+6. Conditionally includes health check configuration
+
+## Directive Evaluation Order
+
+When multiple directives are present in a single map, they are evaluated in this order:
+
+1. `embed` (priority 1000) - File merging happens first
+2. `for` (priority 100) - Loop expansion before conditionals
+3. `if` (priority 100) - Conditional evaluation
+4. Custom handlers - User-defined handlers
+5. Regular key processing - Normal YAML keys
+
+This order ensures that:
+
+- Embedded files are merged before other processing
+- Loop variables are in scope when conditionals are evaluated
+- Interpolation is applied to all values automatically
+
+## Type Support
+
+All directives work with:
+
+- **Strings:** Variable interpolation
+- **Numbers:** Condition evaluation, loop indices
+- **Booleans:** Direct condition values
+- **Arrays:** Loop expansion, multiple embeds
+- **Objects:** Nested directive application
+- **Null:** Treated as false in conditions
+
+## Error Handling
+
+- **Undefined variables:** Strict mode errors; lenient mode leaves placeholder unchanged
+- **Invalid syntax:** Parse errors with context (path, line info)
+- **Missing files:** Embed errors with filename
+- **Type mismatches:** Clear error messages explaining expected vs actual type
+- **Cyclic includes:** Detected and reported to prevent infinite loops
