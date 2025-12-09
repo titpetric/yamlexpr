@@ -3,11 +3,11 @@ package yamlexpr
 import (
 	"fmt"
 	"io/fs"
-	"strings"
 
-	"github.com/expr-lang/expr"
 	yaml "gopkg.in/yaml.v3"
 
+	"github.com/titpetric/yamlexpr/handlers"
+	"github.com/titpetric/yamlexpr/model"
 	"github.com/titpetric/yamlexpr/stack"
 )
 
@@ -17,17 +17,63 @@ type Expr struct {
 	config *Config
 }
 
-// New creates a new Expr evaluator with the given filesystem for includes.
-// Optional ConfigOption arguments can be passed to customize directive syntax.
-func New(rootFS fs.FS, opts ...ConfigOption) *Expr {
+// RegisterHandler registers a directive handler after Expr creation.
+func (e *Expr) RegisterHandler(directive string, handler DirectiveHandler) {
+	if e.config.handlers == nil {
+		e.config.handlers = make(map[string]DirectiveHandler)
+	}
+	// Track order of registration if this is a new handler
+	if _, exists := e.config.handlers[directive]; !exists {
+		e.config.handlerOrder = append(e.config.handlerOrder, directive)
+	}
+	e.config.handlers[directive] = handler
+}
+
+// New creates a new Expr evaluator with optional filesystem and configuration options.
+// Call with no arguments for a basic evaluator, then use WithFS() and/or WithStandardHandlers() to configure.
+// Optional ConfigOption arguments can be passed to customize directive syntax and handlers.
+// No handlers are registered by default; use WithStandardHandlers() or WithDirectiveHandler() options.
+//
+// Example:
+//
+//	e := yamlexpr.New(myFS, yamlexpr.WithStandardHandlers())
+//	e := yamlexpr.New(myFS)  // No handlers
+//	e := yamlexpr.New()      // No filesystem, no handlers
+func New(opts ...ConfigOption) *Expr {
 	config := DefaultConfig()
+
 	for _, opt := range opts {
 		opt(config)
 	}
-	return &Expr{
-		fs:     rootFS,
+
+	e := &Expr{
+		fs:     config.filesystem,
 		config: config,
 	}
+
+	// Register standard handlers if requested
+	if config.registerStandard {
+		e.RegisterHandler(e.config.EmbedDirective(), handlers.EmbedHandlerBuiltin(e, e.config.EmbedDirective()))
+		e.RegisterHandler(e.config.ForDirective(), handlers.ForHandlerBuiltin(e, e.config.ForDirective()))
+		e.RegisterHandler(e.config.IfDirective(), handlers.IfHandlerBuiltin(e.config.IfDirective()))
+	}
+
+	return e
+}
+
+// NewExtended creates a new Expr evaluator with standard handlers (for, if, embed) already registered.
+// This is a convenience function equivalent to New(WithStandardHandlers(), opts...).
+// ConfigOption arguments can be passed to customize the evaluator, including WithFS() for filesystem access.
+//
+// Example:
+//
+//	e := yamlexpr.NewExtended(yamlexpr.WithFS(myFS))
+//	e := yamlexpr.NewExtended(yamlexpr.WithFS(myFS), yamlexpr.WithSyntax(custom))
+func NewExtended(opts ...ConfigOption) *Expr {
+	allOpts := make([]ConfigOption, 0, len(opts)+1)
+	allOpts = append(allOpts, WithStandardHandlers())
+	allOpts = append(allOpts, opts...)
+	return New(allOpts...)
 }
 
 // Process processes a YAML document (any) with expression evaluation.
@@ -81,14 +127,29 @@ func (e *Expr) ProcessWithStack(doc any, st *stack.Stack) (any, error) {
 	if st == nil {
 		st = stack.New(nil)
 	}
-	ctx := NewExprContext(&ExprContextOptions{
+	ctx := model.NewContext(&model.ContextOptions{
 		Stack: st,
 	})
 	return e.processWithContext(ctx, doc)
 }
 
+// ProcessWithContext implements model.Processor interface.
+func (e *Expr) ProcessWithContext(ctx *model.Context, doc any) (any, error) {
+	return e.processWithContext(ctx, doc)
+}
+
+// ProcessMapWithContext implements model.Processor interface.
+func (e *Expr) ProcessMapWithContext(ctx *model.Context, m map[string]any) (any, error) {
+	return e.processMapWithContext(ctx, m)
+}
+
+// LoadAndMergeFileWithContext implements model.Processor interface.
+func (e *Expr) LoadAndMergeFileWithContext(ctx *model.Context, filename string, result map[string]any) error {
+	return e.loadAndMergeFileWithContext(ctx, filename, result)
+}
+
 // processWithContext is the internal implementation that handles the processing with context.
-func (e *Expr) processWithContext(ctx *ExprContext, doc any) (any, error) {
+func (e *Expr) processWithContext(ctx *model.Context, doc any) (any, error) {
 	switch d := doc.(type) {
 	case map[string]any:
 		return e.processMapWithContext(ctx, d)
@@ -96,48 +157,58 @@ func (e *Expr) processWithContext(ctx *ExprContext, doc any) (any, error) {
 		return e.processSliceWithContext(ctx, d)
 	case string:
 		// Interpolate string values with error context
-		return interpolateStringWithContext(d, ctx.Stack(), ctx.Path())
+		return handlers.InterpolateStringWithContext(d, ctx.Stack(), ctx.Path())
 	default:
 		// Return primitives as-is
 		return d, nil
 	}
 }
 
-// processMapWithContext processes a map with ExprContext, handling include, for, and if directives.
-func (e *Expr) processMapWithContext(ctx *ExprContext, m map[string]any) (any, error) {
+// processMapWithContext processes a map with ExprContext, handling include, for, if, and custom directives.
+func (e *Expr) processMapWithContext(ctx *model.Context, m map[string]any) (any, error) {
 	result := make(map[string]any)
+	processedKeys := make(map[string]bool) // Track keys handled by handlers
 
-	// Check for include directive
-	if incl, ok := m[e.config.IncludeDirective()]; ok {
-		if err := e.handleIncludeWithContext(ctx, incl, result); err != nil {
-			return nil, err
+	// Check for custom handlers in registration order (deterministic evaluation)
+	for _, directive := range e.config.handlerOrder {
+		handler := e.config.handlers[directive]
+		if value, ok := m[directive]; ok {
+			// Handler found - call it
+			handlerResult, consumed, err := handler(ctx, m, value)
+			if err != nil {
+				return nil, err
+			}
+
+			// If handler consumed all processing, return its result directly
+			if consumed {
+				return handlerResult, nil
+			}
+
+			// Handler returned a result but didn't consume all processing
+			// Merge the result into our result map and continue
+			if handlerResult != nil {
+				if resMap, ok := handlerResult.(map[string]any); ok {
+					for k, v := range resMap {
+						result[k] = v
+						// Mark these keys as processed by the handler
+						processedKeys[k] = true
+					}
+				}
+			}
+
+			// Remove the directive from processing
+			delete(m, directive)
+			processedKeys[directive] = true
 		}
-		// Remove include from processing
-		delete(m, e.config.IncludeDirective())
 	}
 
-	// Check for for directive
-	if forExpr, ok := m[e.config.ForDirective()]; ok {
-		return e.handleForWithContext(ctx, forExpr, m)
-	}
-
-	// Check for if directive
-	if ifExpr, ok := m[e.config.IfDirective()]; ok {
-		// Evaluate condition with path context
-		ok, err := evaluateConditionWithPath(ifExpr, ctx.Stack(), ctx.Path()+"."+e.config.IfDirective())
-		if err != nil {
-			return nil, err
-		}
-		if !ok {
-			// Return empty map if condition is false (omit the entire block)
-			return nil, nil
-		}
-		// Remove if from processing
-		delete(m, e.config.IfDirective())
-	}
-
-	// Process remaining keys
+	// Process remaining keys (skip those handled by custom handlers)
 	for k, v := range m {
+		// Skip if already processed by a handler
+		if processedKeys[k] {
+			continue
+		}
+
 		childCtx := ctx.AppendPath(k)
 		processed, err := e.processWithContext(childCtx, v)
 		if err != nil {
@@ -152,43 +223,13 @@ func (e *Expr) processMapWithContext(ctx *ExprContext, m map[string]any) (any, e
 	return result, nil
 }
 
-// processSliceWithContext processes a slice with ExprContext, handling for and if directives.
-func (e *Expr) processSliceWithContext(ctx *ExprContext, s []any) (any, error) {
+// processSliceWithContext processes a slice with ExprContext.
+// Handlers registered for directives (like for, if) will be called when processing maps.
+func (e *Expr) processSliceWithContext(ctx *model.Context, s []any) (any, error) {
 	result := make([]any, 0, len(s))
 
 	for i, item := range s {
 		itemCtx := ctx.AppendPath(fmt.Sprintf("[%d]", i))
-
-		// Check if item is a map with for or if directives
-		if m, ok := item.(map[string]any); ok {
-			// Check for for directive first (should be evaluated before if)
-			if forExpr, ok := m[e.config.ForDirective()]; ok {
-				processed, err := e.handleForWithContext(itemCtx, forExpr, m)
-				if err != nil {
-					return nil, err
-				}
-				// handleFor returns a slice, extend result
-				if slice, ok := processed.([]any); ok {
-					result = append(result, slice...)
-				}
-				continue
-			}
-
-			// If no for directive, check if directive
-			if ifExpr, ok := m[e.config.IfDirective()]; ok {
-				// Evaluate condition
-				ok, err := evaluateConditionWithPath(ifExpr, ctx.Stack(), itemCtx.Path()+"."+e.config.IfDirective())
-				if err != nil {
-					return nil, err
-				}
-				if !ok {
-					// Skip this item
-					continue
-				}
-				// Remove if from processing
-				delete(m, e.config.IfDirective())
-			}
-		}
 
 		processed, err := e.processWithContext(itemCtx, item)
 		if err != nil {
@@ -202,30 +243,8 @@ func (e *Expr) processSliceWithContext(ctx *ExprContext, s []any) (any, error) {
 	return result, nil
 }
 
-// handleIncludeWithContext processes an include directive with ExprContext.
-func (e *Expr) handleIncludeWithContext(ctx *ExprContext, incl any, result map[string]any) error {
-	// Handle single file
-	if filename, ok := incl.(string); ok {
-		return e.loadAndMergeFileWithContext(ctx, filename, result)
-	}
-
-	// Handle list of files
-	if files, ok := incl.([]any); ok {
-		for _, f := range files {
-			if filename, ok := f.(string); ok {
-				if err := e.loadAndMergeFileWithContext(ctx, filename, result); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	}
-
-	return fmt.Errorf("include must be a string or list of strings, got %T", incl)
-}
-
 // loadAndMergeFileWithContext loads a YAML file and merges it into the result with ExprContext.
-func (e *Expr) loadAndMergeFileWithContext(ctx *ExprContext, filename string, result map[string]any) error {
+func (e *Expr) loadAndMergeFileWithContext(ctx *model.Context, filename string, result map[string]any) error {
 	data, err := fs.ReadFile(e.fs, filename)
 	if err != nil {
 		return fmt.Errorf("error reading file %s: %w", filename, err)
@@ -297,133 +316,6 @@ func mergeRecursive(dst, src any) {
 	}
 }
 
-// handleForWithContext processes a for directive with ExprContext.
-// The for directive expands a map template for each item in a collection.
-// Supports both simple and complex for expressions:
-//   - "item in items" - binds each item to 'item'
-//   - "(idx, item) in items" - binds index to 'idx' and item to 'item'
-//   - Variables can be "_" to omit from the stack
-//
-// m should contain "for" key and template keys.
-func (e *Expr) handleForWithContext(ctx *ExprContext, forExpr any, m map[string]any) (any, error) {
-	// Get the collection to iterate over and parse the for expression
-	var items []any
-	var loopVars *ForLoopExpr
-
-	switch v := forExpr.(type) {
-	case []any:
-		// Direct array literal: for: [1, 2, 3]
-		items = v
-		// Default to single "item" variable for direct arrays
-		loopVars = &ForLoopExpr{
-			Variables: []string{"item"},
-			Source:    "",
-		}
-	case string:
-		// Parse as new for expression (e.g., "item in items" or "(idx, item) in items")
-		var err error
-		loopVars, err = parseForExpr(v)
-		if err != nil {
-			pathCtx := ""
-			if ctx.Path() != "" {
-				pathCtx = fmt.Sprintf(" at %s.for", ctx.Path())
-			}
-			return nil, fmt.Errorf("invalid for expression '%s'%s: %w", v, pathCtx, err)
-		}
-
-		// Resolve the source variable from the stack
-		sourceVal, ok := ctx.Stack().Resolve(loopVars.Source)
-		if !ok {
-			pathCtx := ""
-			if ctx.Path() != "" {
-				pathCtx = fmt.Sprintf(" at %s.for", ctx.Path())
-			}
-			return nil, fmt.Errorf("undefined variable '%s'%s", loopVars.Source, pathCtx)
-		}
-
-		// Convert source to slice
-		if slice, ok := sourceVal.([]any); ok {
-			items = slice
-		} else {
-			pathCtx := ""
-			if ctx.Path() != "" {
-				pathCtx = fmt.Sprintf(" at %s.for", ctx.Path())
-			}
-			return nil, fmt.Errorf("for: variable '%s' must be an array, got %T%s", loopVars.Source, sourceVal, pathCtx)
-		}
-	default:
-		pathCtx := ""
-		if ctx.Path() != "" {
-			pathCtx = fmt.Sprintf(" at %s.for", ctx.Path())
-		}
-		return nil, fmt.Errorf("for: expected array or string expression, got %T%s", forExpr, pathCtx)
-	}
-
-	// If empty collection, return empty slice
-	if len(items) == 0 {
-		return []any{}, nil
-	}
-
-	// Iterate over items and expand template
-	result := make([]any, 0, len(items))
-	for idx, item := range items {
-		// Build the scope map with only non-underscore variables
-		scope := make(map[string]any)
-		for i, varName := range loopVars.Variables {
-			if varName == "_" {
-				// Skip underscore variables (intentional omission)
-				continue
-			}
-
-			// Bind the appropriate value based on position
-			switch i {
-			case 0:
-				// First variable is usually the item (or index if 2 variables)
-				if len(loopVars.Variables) == 2 {
-					scope[varName] = idx
-				} else {
-					scope[varName] = item
-				}
-			case 1:
-				// Second variable is the item
-				scope[varName] = item
-			default:
-				// Additional variables (for potential future use)
-				scope[varName] = item
-			}
-		}
-
-		// Create new stack scope with loop variables
-		ctx.PushStackScope(scope)
-
-		// Create a fresh copy of the template for each iteration (all keys except for directive)
-		template := make(map[string]any)
-		for k, v := range m {
-			if k != e.config.ForDirective() {
-				template[k] = v
-			}
-		}
-
-		// Create context for this iteration
-		itemCtx := ctx.AppendPath(fmt.Sprintf("[%d]", idx))
-
-		// Process template with current item in scope
-		expanded, err := e.processMapWithContext(itemCtx, template)
-		if err != nil {
-			ctx.PopStackScope()
-			return nil, err
-		}
-		if expanded != nil {
-			result = append(result, expanded)
-		}
-
-		// Pop the scope for this iteration
-		ctx.PopStackScope()
-	}
-
-	return result, nil
-}
-
 // parseYAML parses YAML data into a map[string]any or []any.
 func parseYAML(data []byte) (any, error) {
 	var result any
@@ -431,139 +323,4 @@ func parseYAML(data []byte) (any, error) {
 		return nil, fmt.Errorf("error parsing YAML: %w", err)
 	}
 	return result, nil
-}
-
-// evaluateConditionWithPath evaluates an if condition with path context for error messages.
-// Supports:
-// - Boolean values: true/false
-// - Interpolated expressions: "${item.active}"
-// - Direct variable paths: item.active (converted to expressions via go-expr)
-// - Complex expressions: item.status == 'active', item.count > 5, etc.
-// Returns errors with variable context and path if referenced variables don't exist.
-func evaluateConditionWithPath(condition any, st *stack.Stack, path string) (bool, error) {
-	switch v := condition.(type) {
-	case bool:
-		return v, nil
-	case string:
-		// Check for literal true/false first
-		switch v {
-		case "true", "1", "yes":
-			return true, nil
-		case "false", "0", "no", "":
-			return false, nil
-		}
-
-		// Handle interpolated expressions like "${item.active}"
-		if strings.Contains(v, "${") {
-			str, err := interpolateStringWithContext(v, st, path)
-			if err != nil {
-				return false, err
-			}
-			// After interpolation, try to parse as boolean
-			switch str {
-			case "true", "1", "yes":
-				return true, nil
-			case "false", "0", "no", "":
-				return false, nil
-			default:
-				// The interpolated result couldn't be parsed as boolean
-				// If it's a string comparison (like "active == 'active'"), quote the left side
-				v = quoteUnquotedComparisons(str)
-			}
-		}
-
-		// Use go-expr to evaluate the expression
-		env := st.All()
-		program, err := expr.Compile(v, expr.Env(env))
-		if err != nil {
-			pathCtx := ""
-			if path != "" {
-				pathCtx = fmt.Sprintf(" at %s", path)
-			}
-			return false, fmt.Errorf("error compiling expression '%s'%s: %w", v, pathCtx, err)
-		}
-
-		result, err := expr.Run(program, env)
-		if err != nil {
-			pathCtx := ""
-			if path != "" {
-				pathCtx = fmt.Sprintf(" at %s", path)
-			}
-			return false, fmt.Errorf("error evaluating expression '%s'%s: %w", v, pathCtx, err)
-		}
-
-		// Convert result to boolean
-		return isTruthy(result), nil
-
-	case int, int8, int16, int32, int64:
-		// Non-zero is true
-		return v != 0, nil
-	case float32, float64:
-		// Non-zero is true
-		return v != 0.0, nil
-	default:
-		pathCtx := ""
-		if path != "" {
-			pathCtx = fmt.Sprintf(" at %s", path)
-		}
-		return false, fmt.Errorf("unsupported condition type: %T%s", condition, pathCtx)
-	}
-}
-
-// quoteUnquotedComparisons adds quotes around unquoted string literals in comparisons.
-// For example: "active == 'active'" stays the same, but "active == test" becomes "'active' == 'test'"
-func quoteUnquotedComparisons(expr string) string {
-	// Check for comparison operators
-	operators := []string{"==", "!=", "<", ">", "<=", ">="}
-
-	for _, op := range operators {
-		if strings.Contains(expr, op) {
-			parts := strings.Split(expr, op)
-			if len(parts) == 2 {
-				left := strings.TrimSpace(parts[0])
-				right := strings.TrimSpace(parts[1])
-
-				// Quote unquoted parts (but not if they're already quoted)
-				if !isQuoted(left) && !strings.Contains(left, ".") && !strings.Contains(left, "(") {
-					left = "'" + left + "'"
-				}
-				if !isQuoted(right) && !strings.Contains(right, ".") && !strings.Contains(right, "(") {
-					right = "'" + right + "'"
-				}
-
-				return left + " " + op + " " + right
-			}
-		}
-	}
-
-	return expr
-}
-
-// isQuoted checks if a string is already quoted
-func isQuoted(s string) bool {
-	s = strings.TrimSpace(s)
-	return (strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"")) ||
-		(strings.HasPrefix(s, "'") && strings.HasSuffix(s, "'"))
-}
-
-// isTruthy returns true for non-empty/non-zero values.
-func isTruthy(v any) bool {
-	switch val := v.(type) {
-	case bool:
-		return val
-	case int, int8, int16, int32, int64:
-		return val != 0
-	case uint, uint8, uint16, uint32, uint64:
-		return val != 0
-	case float32, float64:
-		return val != 0.0
-	case string:
-		return val != ""
-	case []any:
-		return len(val) > 0
-	case map[string]any:
-		return len(val) > 0
-	default:
-		return v != nil
-	}
 }

@@ -1,0 +1,41 @@
+package handlers
+
+import (
+	"fmt"
+
+	"github.com/titpetric/yamlexpr/model"
+)
+
+// EmbedHandlerBuiltin creates a handler for the "embed" directive.
+// Requires a Processor to load and merge files.
+//
+// Embed is used to compose YAML files. It loads external YAML files and merges
+// their content into the current structure.
+func EmbedHandlerBuiltin(proc Processor, embedDirective string) DirectiveHandler {
+	return func(ctx *model.Context, block map[string]any, value any) (any, bool, error) {
+		// Result map to merge embedded content into
+		result := make(map[string]any)
+
+		// Handle single file
+		if filename, ok := value.(string); ok {
+			if err := proc.LoadAndMergeFileWithContext(ctx, filename, result); err != nil {
+				return nil, false, err
+			}
+		} else if files, ok := value.([]any); ok {
+			// Handle list of files
+			for _, f := range files {
+				if filename, ok := f.(string); ok {
+					if err := proc.LoadAndMergeFileWithContext(ctx, filename, result); err != nil {
+						return nil, false, err
+					}
+				}
+			}
+		} else {
+			return nil, false, fmt.Errorf("embed must be a string or list of strings, got %T", value)
+		}
+
+		// Return the merged content but don't consume all processing
+		// This allows the current map's other keys to still be processed
+		return result, false, nil
+	}
+}

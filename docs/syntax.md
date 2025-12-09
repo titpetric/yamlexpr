@@ -1,6 +1,6 @@
 # yamlexpr Syntax Reference
 
-This document describes the special YAML directives supported by yamlexpr: `include`, `for`, and `if`.
+This document describes the special YAML directives supported by yamlexpr: `embed`, `for`, and `if`.
 
 ## Variable Interpolation with `${variable}`
 
@@ -15,15 +15,15 @@ This was chosen to enable yaml parsing for `value: ${variable}` ; omitting the `
 
 This is inspired by GitHub actions.
 
-## Including files with `include`
+## Embedding files with `embed`
 
-To enable composition, you can use the `include` statement at any level of the YAML.
+To enable composition, you can use the `embed` statement at any level of the YAML.
 
 ```yaml
-include: _base.yaml
+embed: _base.yaml
 
 settings:
-  include: _settings.yml
+  embed: _settings.yml
 ```
 
 Files are resolved relative to the base directory provided to `yamlexpr.New()`.
@@ -156,20 +156,20 @@ If `use_postgres` is false, the entire `database` key is removed.
 Features can be combined in a single YAML document:
 
 ```yaml
-include: "_base.yaml"
+embed: "_base.yaml"
 
 services:
-  - for: item in service_list
-    if: item.enabled
-    name: "${item.name}"
-    config:
-      include: "_service-defaults.yaml"
-      port: ${item.port}
+   - for: item in service_list
+     if: item.enabled
+     name: "${item.name}"
+     config:
+       embed: "_service-defaults.yaml"
+       port: ${item.port}
 ```
 
 This example:
 
-1. Includes a base config file
+1. Embeds a base config file
 2. Loops over a service list
 3. Filters services based on the `enabled` flag
-4. For each service, includes default settings and applies service-specific port
+4. For each service, embeds default settings and applies service-specific port

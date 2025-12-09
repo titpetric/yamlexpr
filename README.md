@@ -113,12 +113,12 @@ if err != nil {
 ```go
 // Use Vue.js-style directives
 expr := yamlexpr.New(os.DirFS("."), yamlexpr.WithSyntax(yamlexpr.Syntax{
-	If:      "v-if",
-	For:     "v-for",
-	Include: "v-include",
+	If:    "v-if",
+	For:   "v-for",
+	Embed: "v-embed",
 }))
 
-// Now your YAML can use v-if, v-for, and v-include
+// Now your YAML can use v-if, v-for, and v-embed
 result, err := expr.Load("config.yaml")
 ```
 
@@ -129,7 +129,7 @@ See [Custom Syntax Configuration](docs/custom-syntax.md) for more examples.
 - [X] **Variable Interpolation**: Use `${variable.path}` syntax in string values
 - [X] **Conditionals**: Include/exclude blocks with `if:` directive
 - [X] **For Loops**: Iterate and expand templates with `for:` directive
-- [X] **Composition**: Include external YAML files with `include:` directive
+- [X] **Composition**: Embed external YAML files with `embed:` directive
 
 ## API
 
@@ -166,13 +166,13 @@ environment: production
 port: 8080
 
 services:
-  - for: "service in available_services"
-    if: "${service.enabled}"
-    name: "${service.name}"
-    replicas: "${service.replicas}"
-
-database:
-  include: "database.yaml"
+   - for: "service in available_services"
+     if: "${service.enabled}"
+     name: "${service.name}"
+     replicas: "${service.replicas}"
+ 
+ database:
+   embed: "database.yaml"
 ```
 
 ```yaml

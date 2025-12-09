@@ -1,6 +1,7 @@
 package yamlexpr_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,12 +11,12 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	e := yamlexpr.New(nil)
+	e := yamlexpr.New()
 	require.NotNil(t, e)
 }
 
 func TestExpr_ProcessWithStack(t *testing.T) {
-	e := yamlexpr.New(nil)
+	e := yamlexpr.New()
 	st := stack.New(map[string]any{"name": "John"})
 
 	// Test with primitive value
@@ -41,7 +42,7 @@ func TestExpr_ProcessWithStack(t *testing.T) {
 }
 
 func TestExpr_Process(t *testing.T) {
-	e := yamlexpr.New(nil)
+	e := yamlexpr.New()
 
 	doc := map[string]any{
 		"name":  "${user.name}",
@@ -57,4 +58,14 @@ func TestExpr_Process(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, want, got)
+}
+
+// TestExpr_Load tests the Load function.
+func TestExpr_Load(t *testing.T) {
+	expr := yamlexpr.New(yamlexpr.WithFS(os.DirFS("testdata/fixtures")))
+
+	result, err := expr.Load("001-simple-pass-through.yaml")
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	require.IsType(t, map[string]any{}, result)
 }

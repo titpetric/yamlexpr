@@ -13,12 +13,25 @@ import (
 type Config struct {
 	// syntax defines the directive keywords used in YAML documents
 	syntax Syntax
+	// handlers maps directive names to their handler functions
+	handlers map[string]DirectiveHandler
+	// handlerOrder tracks the order handlers were registered (for deterministic evaluation)
+	handlerOrder []string
+	// registerStandard indicates if standard handlers should be registered
+	registerStandard bool
+	// filesystem is the FS used for loading resources (can be nil)
+	filesystem fs.FS
 }
 ```
 
 ```go
 // ConfigOption is a functional option for configuring an Expr instance.
 type ConfigOption func(*Config)
+```
+
+```go
+// DirectiveHandler is a backwards-compatible alias for model.DirectiveHandler.
+type DirectiveHandler = model.DirectiveHandler
 ```
 
 ```go
@@ -30,37 +43,23 @@ type Expr struct {
 ```
 
 ```go
-// ExprContext carries evaluation context and state used during YAML document processing.
-// Each Process operation gets its own ExprContext, making concurrent processing safe.
-type ExprContext struct {
-	// stack holds variable scope and data resolution
-	stack *stack.Stack
-
-	// path tracks the current location in the document (e.g., "config.database", "[0].items[1]")
-	// used for error messages and context
-	path string
-
-	// includeChain tracks the chain of included files for error context
-	includeChain []string
-}
+// ExprContext is a backwards-compatible alias for model.Context.
+type ExprContext = model.Context
 ```
 
 ```go
-// ExprContextOptions holds configurable options for a new ExprContext.
-type ExprContextOptions struct {
-	// Stack is the resolver stack for variable lookups.
-	Stack *stack.Stack
-
-	// Path is the initial path in the document (defaults to "").
-	Path string
-
-	// IncludeChain is the initial chain of included files.
-	IncludeChain []string
-}
+// ExprContextOptions is a backwards-compatible alias for model.ContextOptions.
+type ExprContextOptions = model.ContextOptions
 ```
 
 ```go
 // ForLoopExpr represents a parsed for loop expression.
+// It holds the variable names to bind and the source collection to iterate over.
+//
+// Variables can include "_" to omit a specific binding position (e.g., ignoring index).
+//
+// Example: for the expression "item in items", Variables is ["item"] and Source is "items".
+// For the expression "(idx, item) in items", Variables is ["idx", "item"] and Source is "items".
 type ForLoopExpr struct {
 	// Variables is a list of variable names to bind. Can include "_" to omit.
 	Variables []string
@@ -74,12 +73,12 @@ type ForLoopExpr struct {
 // Syntax defines the directive keywords used in YAML documents.
 // Empty fields retain their default values when merged with defaults.
 type Syntax struct {
-	// If is the directive keyword for conditional blocks (default: "if")
+	// If is the directive keyword for conditional blocks (default: "if").
 	If string `json:"if" yaml:"if"`
-	// For is the directive keyword for iteration blocks (default: "for")
+	// For is the directive keyword for iteration blocks (default: "for").
 	For string `json:"for" yaml:"for"`
-	// Include is the directive keyword for file inclusion (default: "include")
-	Include string `json:"include" yaml:"include"`
+	// Embed is the directive keyword for file embedding/inclusion (default: "embed").
+	Embed string `json:"embed" yaml:"embed"`
 }
 ```
 
@@ -88,32 +87,33 @@ type Syntax struct {
 ```go
 // DefaultSyntax is the default syntax configuration with standard directive names.
 var DefaultSyntax = Syntax{
-	If:      "if",
-	For:     "for",
-	Include: "include",
+	If:    "if",
+	For:   "for",
+	Embed: "embed",
 }
 ```
 
 ## Function symbols
 
 - `func DefaultConfig () *Config`
-- `func New (rootFS fs.FS, opts ...ConfigOption) *Expr`
+- `func New (opts ...ConfigOption) *Expr`
 - `func NewExprContext (options *ExprContextOptions) *ExprContext`
+- `func NewExtended (opts ...ConfigOption) *Expr`
+- `func WithDirectiveHandler (directive string, handler DirectiveHandler) ConfigOption`
+- `func WithFS (filesystem fs.FS) ConfigOption`
+- `func WithStandardHandlers () ConfigOption`
 - `func WithSyntax (syntax Syntax) ConfigOption`
+- `func (*Config) EmbedDirective () string`
 - `func (*Config) ForDirective () string`
+- `func (*Config) GetHandler (directive string) DirectiveHandler`
 - `func (*Config) IfDirective () string`
-- `func (*Config) IncludeDirective () string`
 - `func (*Expr) Load (filename string) (map[string]any, error)`
+- `func (*Expr) LoadAndMergeFileWithContext (ctx *model.Context, filename string, result map[string]any) error`
 - `func (*Expr) Process (doc any, rootVars map[string]any) (any, error)`
+- `func (*Expr) ProcessMapWithContext (ctx *model.Context, m map[string]any) (any, error)`
+- `func (*Expr) ProcessWithContext (ctx *model.Context, doc any) (any, error)`
 - `func (*Expr) ProcessWithStack (doc any, st *stack.Stack) (any, error)`
-- `func (*ExprContext) AppendPath (segment string) *ExprContext`
-- `func (*ExprContext) FormatIncludeChain () string`
-- `func (*ExprContext) Path () string`
-- `func (*ExprContext) PopStackScope ()`
-- `func (*ExprContext) PushStackScope (m map[string]any)`
-- `func (*ExprContext) Stack () *stack.Stack`
-- `func (*ExprContext) WithInclude (filename string) *ExprContext`
-- `func (*ExprContext) WithPath (newPath string) *ExprContext`
+- `func (*Expr) RegisterHandler (directive string, handler DirectiveHandler)`
 
 ### DefaultConfig
 
@@ -125,18 +125,98 @@ func DefaultConfig() *Config
 
 ### New
 
-New creates a new Expr evaluator with the given filesystem for includes. Optional ConfigOption arguments can be passed to customize directive syntax.
+New creates a new Expr evaluator with optional filesystem and configuration options. Call with no arguments for a basic evaluator, then use WithFS() and/or WithStandardHandlers() to configure. Optional ConfigOption arguments can be passed to customize directive syntax and handlers. No handlers are registered by default; use WithStandardHandlers() or WithDirectiveHandler() options.
+
+Example:
+
+```
+e := yamlexpr.New(myFS, yamlexpr.WithStandardHandlers())
+e := yamlexpr.New(myFS)  // No handlers
+e := yamlexpr.New()      // No filesystem, no handlers
+```
 
 ```go
-func New(rootFS fs.FS, opts ...ConfigOption) *Expr
+func New(opts ...ConfigOption) *Expr
 ```
 
 ### NewExprContext
 
-NewExprContext returns an ExprContext initialized for the given options.
+NewExprContext is a backwards-compatible alias for model.NewContext
 
 ```go
 func NewExprContext(options *ExprContextOptions) *ExprContext
+```
+
+### NewExtended
+
+NewExtended creates a new Expr evaluator with standard handlers (for, if, embed) already registered. This is a convenience function equivalent to New(WithStandardHandlers(), opts...). ConfigOption arguments can be passed to customize the evaluator, including WithFS() for filesystem access.
+
+Example:
+
+```
+e := yamlexpr.NewExtended(yamlexpr.WithFS(myFS))
+e := yamlexpr.NewExtended(yamlexpr.WithFS(myFS), yamlexpr.WithSyntax(custom))
+```
+
+```go
+func NewExtended(opts ...ConfigOption) *Expr
+```
+
+### WithDirectiveHandler
+
+WithDirectiveHandler registers a custom handler for a directive name. The handler will be called for any block containing the specified directive.
+
+Example:
+
+```
+e := yamlexpr.New(fs,
+	yamlexpr.WithDirectiveHandler("matrix", myMatrixHandler),
+	yamlexpr.WithDirectiveHandler("repeat", myRepeatHandler),
+)
+```
+
+If a handler is registered for a built-in directive (if, for, embed), it overrides the default implementation for that directive.
+
+```go
+func WithDirectiveHandler(directive string, handler DirectiveHandler) ConfigOption
+```
+
+### WithFS
+
+WithFS sets the filesystem for resource loading (embed directive). If not set, only in-memory processing is available.
+
+Example:
+
+```
+e := yamlexpr.New(yamlexpr.WithFS(myFS), yamlexpr.WithStandardHandlers())
+```
+
+```go
+func WithFS(filesystem fs.FS) ConfigOption
+```
+
+### WithStandardHandlers
+
+WithStandardHandlers registers the standard handlers (for, if, embed). This is a convenience option to enable the built-in directives.
+
+Example:
+
+```
+e := yamlexpr.New(yamlexpr.WithFS(fs), yamlexpr.WithStandardHandlers())
+```
+
+This is equivalent to manually registering each handler:
+
+```
+e := yamlexpr.New(yamlexpr.WithFS(fs),
+	yamlexpr.WithDirectiveHandler("for", handlers.ForHandlerBuiltin(e, "for")),
+	yamlexpr.WithDirectiveHandler("if", handlers.IfHandlerBuiltin("if")),
+	yamlexpr.WithDirectiveHandler("embed", handlers.EmbedHandlerBuiltin(e, "embed")),
+)
+```
+
+```go
+func WithStandardHandlers() ConfigOption
 ```
 
 ### WithSyntax
@@ -147,9 +227,9 @@ Example:
 
 ```
 e := yamlexpr.New(fs, yamlexpr.WithSyntax(yamlexpr.Syntax{
-	If:      "v-if",
-	For:     "v-for",
-	Include: "v-include",
+	If:    "v-if",
+	For:   "v-for",
+	Embed: "v-embed",
 }))
 ```
 
@@ -159,12 +239,20 @@ Or partially customize (empty fields keep defaults):
 e := yamlexpr.New(fs, yamlexpr.WithSyntax(yamlexpr.Syntax{
 	If:  "v-if",
 	For: "v-for",
-	// Include remains "include"
+	// Embed remains "embed"
 }))
 ```
 
 ```go
 func WithSyntax(syntax Syntax) ConfigOption
+```
+
+### EmbedDirective
+
+EmbedDirective returns the current embed directive keyword.
+
+```go
+func (*Config) EmbedDirective() string
 ```
 
 ### ForDirective
@@ -175,20 +263,20 @@ ForDirective returns the current for directive keyword.
 func (*Config) ForDirective() string
 ```
 
+### GetHandler
+
+GetHandler returns the handler for a directive, or nil if not registered.
+
+```go
+func (*Config) GetHandler(directive string) DirectiveHandler
+```
+
 ### IfDirective
 
 IfDirective returns the current if directive keyword.
 
 ```go
 func (*Config) IfDirective() string
-```
-
-### IncludeDirective
-
-IncludeDirective returns the current include directive keyword.
-
-```go
-func (*Config) IncludeDirective() string
 ```
 
 ### Load
@@ -199,12 +287,36 @@ Load loads a YAML file and processes it with expression evaluation. Returns a ma
 func (*Expr) Load(filename string) (map[string]any, error)
 ```
 
+### LoadAndMergeFileWithContext
+
+LoadAndMergeFileWithContext implements model.Processor interface.
+
+```go
+func (*Expr) LoadAndMergeFileWithContext(ctx *model.Context, filename string, result map[string]any) error
+```
+
 ### Process
 
 Process processes a YAML document (any) with expression evaluation. Handles for loops, if conditions, includes, and variable interpolation. Root-level keys in the document are available as variables.
 
 ```go
 func (*Expr) Process(doc any, rootVars map[string]any) (any, error)
+```
+
+### ProcessMapWithContext
+
+ProcessMapWithContext implements model.Processor interface.
+
+```go
+func (*Expr) ProcessMapWithContext(ctx *model.Context, m map[string]any) (any, error)
+```
+
+### ProcessWithContext
+
+ProcessWithContext implements model.Processor interface.
+
+```go
+func (*Expr) ProcessWithContext(ctx *model.Context, doc any) (any, error)
 ```
 
 ### ProcessWithStack
@@ -215,66 +327,10 @@ ProcessWithStack processes a YAML document with a given variable stack.
 func (*Expr) ProcessWithStack(doc any, st *stack.Stack) (any, error)
 ```
 
-### AppendPath
+### RegisterHandler
 
-AppendPath appends a segment to the current path. For example, AppendPath("key") on a context with path "config" results in "config.key". AppendPath("[0]") results in "config[0]".
-
-```go
-func (*ExprContext) AppendPath(segment string) *ExprContext
-```
-
-### FormatIncludeChain
-
-FormatIncludeChain returns the include chain formatted for error messages. Example: "config.yaml -> database.yaml -> secrets.yaml"
+RegisterHandler registers a directive handler after Expr creation.
 
 ```go
-func (*ExprContext) FormatIncludeChain() string
-```
-
-### Path
-
-Path returns the current path in the document.
-
-```go
-func (*ExprContext) Path() string
-```
-
-### PopStackScope
-
-PopStackScope pops the top-most variable scope from the stack.
-
-```go
-func (*ExprContext) PopStackScope()
-```
-
-### PushStackScope
-
-PushStackScope pushes a new variable scope onto the stack. Used when entering a for loop iteration or other scoped contexts.
-
-```go
-func (*ExprContext) PushStackScope(m map[string]any)
-```
-
-### Stack
-
-Stack returns the variable resolution stack.
-
-```go
-func (*ExprContext) Stack() *stack.Stack
-```
-
-### WithInclude
-
-WithInclude returns a new context extended with a filename in the include chain. Used when processing included files to track the chain of includes.
-
-```go
-func (*ExprContext) WithInclude(filename string) *ExprContext
-```
-
-### WithPath
-
-WithPath returns a new context with the path updated. Useful for tracking location while descending into nested structures.
-
-```go
-func (*ExprContext) WithPath(newPath string) *ExprContext
+func (*Expr) RegisterHandler(directive string, handler DirectiveHandler)
 ```

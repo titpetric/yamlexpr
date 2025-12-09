@@ -72,14 +72,14 @@ The simplest use case: substitute values into strings using `${variable}` syntax
 expr := yamlexpr.New(os.DirFS("."))
 
 data := map[string]any{
-    "version": "1.0.0",
-    "environment": "production",
+	"version":     "1.0.0",
+	"environment": "production",
 }
 
 template := map[string]any{
-    "app_name": "myapp",
-    "app_version": "${version}",
-    "env": "${environment}",
+	"app_name":    "myapp",
+	"app_version": "${version}",
+	"env":         "${environment}",
 }
 
 result, err := expr.Process(template, data)
@@ -104,6 +104,7 @@ When `use_database` is true, the `database` section is included. When false, it'
 Generate repeated structures by iterating over arrays. There are two syntax forms:
 
 **String Syntax (reference a variable):**
+
 ```yaml
 services:
   - for: service in service_list
@@ -112,6 +113,7 @@ services:
 ```
 
 **Inline Array Syntax (literal data):**
+
 ```yaml
 services:
   - for:
@@ -130,6 +132,7 @@ For each item, this generates a separate element with the data. When using inlin
 Pull in external YAML files to reduce duplication:
 
 **base-config.yaml:**
+
 ```yaml
 app:
   name: "myapp"
@@ -138,6 +141,7 @@ app:
 ```
 
 **config.yaml:**
+
 ```yaml
 include: base-config.yaml
 app:
@@ -155,6 +159,7 @@ Since yamlexpr is thoroughly tested, we can examine real examples from the test 
 This example (from `testdata/fixtures/050-for-with-if-filtering.yaml`) shows how to iterate over items and filter based on a condition:
 
 **Input:**
+
 ```yaml
 enabled_services:
   - for:
@@ -169,6 +174,7 @@ enabled_services:
 ```
 
 **Result:**
+
 ```yaml
 enabled_services:
   - service: "api"
@@ -184,6 +190,7 @@ Only services with `active: true` are included. The `worker` service is filtered
 Here's a more complex example combining variables, includes, loops, and conditionals:
 
 **Input:**
+
 ```yaml
 db_host: localhost
 db_port: 5432
@@ -210,6 +217,7 @@ debug:
 ```
 
 **Result:**
+
 ```yaml
 servers:
   - name: "web-1"
@@ -233,9 +241,9 @@ By default, yamlexpr uses `if`, `for`, and `include` as directives. But you can 
 ```go
 // Vue.js-style directives
 expr := yamlexpr.New(os.DirFS("."), yamlexpr.WithSyntax(yamlexpr.Syntax{
-    If:      "v-if",
-    For:     "v-for",
-    Include: "v-include",
+	If:      "v-if",
+	For:     "v-for",
+	Include: "v-include",
 }))
 ```
 
@@ -258,6 +266,7 @@ See [Custom Syntax Configuration](custom-syntax.md) for more details.
 Let's look at a practical example: a build configuration for a project that supports multiple languages and deployment targets.
 
 **config.json (data):**
+
 ```json
 {
   "languages": [
@@ -271,6 +280,7 @@ Let's look at a practical example: a build configuration for a project that supp
 ```
 
 **build.yaml (template):**
+
 ```yaml
 include: _base-build-settings.yaml
 
@@ -298,6 +308,7 @@ deployment:
 ```
 
 **Result:**
+
 ```yaml
 # (base settings merged in...)
 

@@ -9,8 +9,35 @@ import (
 	"github.com/titpetric/yamlexpr"
 )
 
+// TestNew_NoHandlers verifies that New without handlers doesn't process directives.
+func TestNew_NoHandlers(t *testing.T) {
+	e := yamlexpr.New()
+
+	// Test that directives are NOT processed without handlers registered
+	doc := map[string]any{
+		"for":   "item in items",
+		"if":    false,
+		"embed": "other.yaml",
+		"items": []any{"a", "b"},
+	}
+
+	result, err := e.Process(doc, nil)
+	require.NoError(t, err)
+
+	m, ok := result.(map[string]any)
+	require.True(t, ok)
+
+	// All directive keys should still be in the output (not processed)
+	require.Contains(t, m, "for")
+	require.Contains(t, m, "if")
+	require.Contains(t, m, "embed")
+	require.Equal(t, "item in items", m["for"])
+	require.Equal(t, false, m["if"])
+	require.Equal(t, "other.yaml", m["embed"])
+}
+
 func TestNew_DefaultSyntax(t *testing.T) {
-	e := yamlexpr.New(nil)
+	e := yamlexpr.New(yamlexpr.WithStandardHandlers())
 	require.NotNil(t, e)
 
 	// Test with default syntax
@@ -26,7 +53,7 @@ func TestNew_DefaultSyntax(t *testing.T) {
 }
 
 func TestNew_CustomIfSyntax(t *testing.T) {
-	e := yamlexpr.New(nil, yamlexpr.WithSyntax(yamlexpr.Syntax{If: "v-if"}))
+	e := yamlexpr.New(yamlexpr.WithSyntax(yamlexpr.Syntax{If: "v-if"}), yamlexpr.WithStandardHandlers())
 
 	doc := map[string]any{
 		"name": "test",
@@ -43,7 +70,7 @@ func TestNew_CustomIfSyntax(t *testing.T) {
 }
 
 func TestNew_CustomForSyntax(t *testing.T) {
-	e := yamlexpr.New(nil, yamlexpr.WithSyntax(yamlexpr.Syntax{For: "v-for"}))
+	e := yamlexpr.New(yamlexpr.WithSyntax(yamlexpr.Syntax{For: "v-for"}), yamlexpr.WithStandardHandlers())
 
 	doc := map[string]any{
 		"users": []any{"alice", "bob"},
@@ -79,13 +106,13 @@ func TestNew_CustomIncludeSyntax(t *testing.T) {
 		"_custom-base.yaml": &fstest.MapFile{Data: []byte("env: production\nport: 8080\n")},
 	}
 
-	// Use custom include directive name
-	e := yamlexpr.New(fs, yamlexpr.WithSyntax(yamlexpr.Syntax{Include: "v-include"}))
+	// Use custom embed directive name
+	e := yamlexpr.New(yamlexpr.WithFS(fs), yamlexpr.WithSyntax(yamlexpr.Syntax{Embed: "v-embed"}), yamlexpr.WithStandardHandlers())
 
-	// Create a YAML template that includes another file using custom directive
+	// Create a YAML template that embeds another file using custom directive
 	template := map[string]any{
-		"v-include": "_custom-base.yaml",
-		"debug":     true,
+		"v-embed": "_custom-base.yaml",
+		"debug":   true,
 	}
 
 	result, err := e.Process(template, nil)
@@ -100,11 +127,11 @@ func TestNew_CustomIncludeSyntax(t *testing.T) {
 }
 
 func TestNew_AllCustomSyntax(t *testing.T) {
-	e := yamlexpr.New(nil, yamlexpr.WithSyntax(yamlexpr.Syntax{
-		If:      "v-if",
-		For:     "v-for",
-		Include: "v-include",
-	}))
+	e := yamlexpr.New(yamlexpr.WithSyntax(yamlexpr.Syntax{
+		If:    "v-if",
+		For:   "v-for",
+		Embed: "v-embed",
+	}), yamlexpr.WithStandardHandlers())
 
 	doc := map[string]any{
 		"items": []any{true, true},
@@ -133,7 +160,7 @@ func TestNew_AllCustomSyntax(t *testing.T) {
 }
 
 func TestNew_CustomForWithIfSyntax(t *testing.T) {
-	e := yamlexpr.New(nil, yamlexpr.WithSyntax(yamlexpr.Syntax{For: "v-for", If: "v-if"}))
+	e := yamlexpr.New(yamlexpr.WithSyntax(yamlexpr.Syntax{For: "v-for", If: "v-if"}), yamlexpr.WithStandardHandlers())
 
 	doc := map[string]any{
 		"numbers": []any{1, 2, 3, 4, 5},
@@ -164,12 +191,12 @@ func TestNew_CustomForWithIfSyntax(t *testing.T) {
 func TestNew_PartialCustomSyntax(t *testing.T) {
 	// Test that empty fields keep defaults
 	e := yamlexpr.New(
-		nil,
 		yamlexpr.WithSyntax(yamlexpr.Syntax{
 			If:  "v-if",
 			For: "v-for",
-			// Include remains "include"
+			// Embed remains "embed"
 		}),
+		yamlexpr.WithStandardHandlers(),
 	)
 
 	doc := map[string]any{
@@ -195,7 +222,7 @@ func TestNew_PartialCustomSyntax(t *testing.T) {
 }
 
 func TestNew_IfConditionWithCustomSyntax(t *testing.T) {
-	e := yamlexpr.New(nil, yamlexpr.WithSyntax(yamlexpr.Syntax{If: "v-if"}))
+	e := yamlexpr.New(yamlexpr.WithSyntax(yamlexpr.Syntax{If: "v-if"}), yamlexpr.WithStandardHandlers())
 
 	doc := map[string]any{
 		"enabled": true,
@@ -216,7 +243,7 @@ func TestNew_IfConditionWithCustomSyntax(t *testing.T) {
 }
 
 func TestNew_FalseIfWithCustomSyntax(t *testing.T) {
-	e := yamlexpr.New(nil, yamlexpr.WithSyntax(yamlexpr.Syntax{If: "v-if"}))
+	e := yamlexpr.New(yamlexpr.WithSyntax(yamlexpr.Syntax{If: "v-if"}), yamlexpr.WithStandardHandlers())
 
 	template := map[string]any{
 		"name": "test",
@@ -237,17 +264,19 @@ func TestNew_IncludeWithCustomSyntax(t *testing.T) {
 	}
 
 	// Use all custom directive names
-	e := yamlexpr.New(fs,
+	e := yamlexpr.New(
+		yamlexpr.WithFS(fs),
 		yamlexpr.WithSyntax(yamlexpr.Syntax{
-			If:      "v-if",
-			For:     "v-for",
-			Include: "v-include",
+			If:    "v-if",
+			For:   "v-for",
+			Embed: "v-embed",
 		}),
+		yamlexpr.WithStandardHandlers(),
 	)
 
 	// Create a template that includes a file, then iterates and filters
 	template := map[string]any{
-		"v-include": "users.yaml",
+		"v-embed": "users.yaml",
 	}
 
 	result, err := e.Process(template, nil)
@@ -263,10 +292,10 @@ func TestNew_IncludeWithCustomSyntax(t *testing.T) {
 	require.Equal(t, "alice", users[0])
 	require.Equal(t, "bob", users[1])
 
-	// Now verify we can iterate over the included data
+	// Now verify we can iterate over the embedded data
 	// First process the template to get the users data, then pass it as root vars
 	doc := map[string]any{
-		"v-include": "users.yaml",
+		"v-embed": "users.yaml",
 	}
 	result2, err := e.Process(doc, nil)
 	require.NoError(t, err)

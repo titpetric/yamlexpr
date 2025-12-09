@@ -5,10 +5,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/titpetric/yamlexpr/handlers"
 	"github.com/titpetric/yamlexpr/stack"
 )
 
-// TestInterpolateString tests the internal interpolateStringHelper function.
+// TestInterpolateString tests the handler's lenient interpolation function.
 func TestInterpolateString(t *testing.T) {
 	st := stack.New(map[string]any{
 		"name": "John",
@@ -19,35 +20,40 @@ func TestInterpolateString(t *testing.T) {
 	})
 
 	// Simple interpolation
-	result := interpolateStringHelper("Hello ${name}", st)
+	result, err := handlers.InterpolateString("Hello ${name}", st)
+	require.NoError(t, err)
 	require.Equal(t, "Hello John", result)
 
 	// Multiple interpolations
-	result = interpolateStringHelper("${name} is ${age} years old", st)
+	result, err = handlers.InterpolateString("${name} is ${age} years old", st)
+	require.NoError(t, err)
 	require.Equal(t, "John is 30 years old", result)
 
 	// Nested path
-	result = interpolateStringHelper("Email: ${user.email}", st)
+	result, err = handlers.InterpolateString("Email: ${user.email}", st)
+	require.NoError(t, err)
 	require.Equal(t, "Email: john@example.com", result)
 
-	// Missing variable
-	result = interpolateStringHelper("Hello ${missing}", st)
+	// Missing variable (lenient mode - unchanged)
+	result, err = handlers.InterpolateString("Hello ${missing}", st)
+	require.NoError(t, err)
 	require.Equal(t, "Hello ${missing}", result)
 
 	// No interpolation
-	result = interpolateStringHelper("No variables here", st)
+	result, err = handlers.InterpolateString("No variables here", st)
+	require.NoError(t, err)
 	require.Equal(t, "No variables here", result)
 }
 
-// TestContainsInterpolation tests the internal containsInterpolation function.
+// TestContainsInterpolation tests the handler's containsInterpolation function.
 func TestContainsInterpolation(t *testing.T) {
-	require.True(t, containsInterpolation("Hello ${name}"))
-	require.False(t, containsInterpolation("Hello name"))
-	require.False(t, containsInterpolation("${unclosed"))
-	require.False(t, containsInterpolation("${"))
+	require.True(t, handlers.ContainsInterpolation("Hello ${name}"))
+	require.False(t, handlers.ContainsInterpolation("Hello name"))
+	require.False(t, handlers.ContainsInterpolation("${unclosed"))
+	require.False(t, handlers.ContainsInterpolation("${"))
 }
 
-// TestParseForExpr tests the internal parseForExpr function.
+// TestParseForExpr tests the handler's ParseForExpr function.
 func TestParseForExpr(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -164,7 +170,7 @@ func TestParseForExpr(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			forExpr, err := parseForExpr(tt.input)
+			forExpr, err := handlers.ParseForExpr(tt.input)
 
 			if tt.wantErr {
 				require.Error(t, err)
