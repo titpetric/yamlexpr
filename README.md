@@ -1,12 +1,14 @@
 # yamlexpr
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/yamlexpr.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr) [![Go Report Card](https://goreportcard.com/badge/github.com/titpetric/yamlexpr)](https://goreportcard.com/report/github.com/titpetric/yamlexpr) [![PkgGoDev](https://img.shields.io/badge/docs-pkg.go.dev-blue.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr) [![Test Coverage](https://img.shields.io/badge/coverage-76.25%25-yellow)](docs/testing-coverage.md)
+[![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/yamlexpr.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr) [![Go Report Card](https://goreportcard.com/badge/github.com/titpetric/yamlexpr)](https://goreportcard.com/report/github.com/titpetric/yamlexpr) [![PkgGoDev](https://img.shields.io/badge/docs-pkg.go.dev-blue.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr) [![Test Coverage](https://img.shields.io/badge/coverage-82.26%25-green)](docs/testing-coverage.md)
 
 YAML composition, interpolation, and conditional evaluation for Go.
 
 ## Documentation
 
+- **[Tutorial](docs/tutorial.md)** - Comprehensive guide with real-world examples
 - **[Syntax Reference](docs/syntax.md)** - Complete guide to `include`, `for`, and `if` directives
+- **[Custom Syntax Configuration](docs/custom-syntax.md)** - Configure directive keywords (Vue, Angular, or custom style)
 - **[API Reference](docs/api.md)** - Complete API documentation
 - **[Design Document](docs/DESIGN.md)** - Architecture and design decisions
 - **[Development Guide](docs/DEVELOPMENT.md)** - Development workflow and feature implementation
@@ -105,6 +107,22 @@ if err != nil {
 	log.Fatal(err)
 }
 ```
+
+### Use Custom Directive Syntax
+
+```go
+// Use Vue.js-style directives
+expr := yamlexpr.New(os.DirFS("."), yamlexpr.WithSyntax(yamlexpr.Syntax{
+	If:      "v-if",
+	For:     "v-for",
+	Include: "v-include",
+}))
+
+// Now your YAML can use v-if, v-for, and v-include
+result, err := expr.Load("config.yaml")
+```
+
+See [Custom Syntax Configuration](docs/custom-syntax.md) for more examples.
 
 ## Features
 

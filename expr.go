@@ -13,13 +13,20 @@ import (
 
 // Expr evaluates YAML documents with variable interpolation, conditionals, and composition.
 type Expr struct {
-	fs fs.FS
+	fs     fs.FS
+	config *Config
 }
 
 // New creates a new Expr evaluator with the given filesystem for includes.
-func New(rootFS fs.FS) *Expr {
+// Optional ConfigOption arguments can be passed to customize directive syntax.
+func New(rootFS fs.FS, opts ...ConfigOption) *Expr {
+	config := DefaultConfig()
+	for _, opt := range opts {
+		opt(config)
+	}
 	return &Expr{
-		fs: rootFS,
+		fs:     rootFS,
+		config: config,
 	}
 }
 
@@ -101,23 +108,23 @@ func (e *Expr) processMapWithContext(ctx *ExprContext, m map[string]any) (any, e
 	result := make(map[string]any)
 
 	// Check for include directive
-	if incl, ok := m["include"]; ok {
+	if incl, ok := m[e.config.IncludeDirective()]; ok {
 		if err := e.handleIncludeWithContext(ctx, incl, result); err != nil {
 			return nil, err
 		}
 		// Remove include from processing
-		delete(m, "include")
+		delete(m, e.config.IncludeDirective())
 	}
 
 	// Check for for directive
-	if forExpr, ok := m["for"]; ok {
+	if forExpr, ok := m[e.config.ForDirective()]; ok {
 		return e.handleForWithContext(ctx, forExpr, m)
 	}
 
 	// Check for if directive
-	if ifExpr, ok := m["if"]; ok {
+	if ifExpr, ok := m[e.config.IfDirective()]; ok {
 		// Evaluate condition with path context
-		ok, err := evaluateConditionWithPath(ifExpr, ctx.Stack(), ctx.Path()+".if")
+		ok, err := evaluateConditionWithPath(ifExpr, ctx.Stack(), ctx.Path()+"."+e.config.IfDirective())
 		if err != nil {
 			return nil, err
 		}
@@ -126,7 +133,7 @@ func (e *Expr) processMapWithContext(ctx *ExprContext, m map[string]any) (any, e
 			return nil, nil
 		}
 		// Remove if from processing
-		delete(m, "if")
+		delete(m, e.config.IfDirective())
 	}
 
 	// Process remaining keys
@@ -155,7 +162,7 @@ func (e *Expr) processSliceWithContext(ctx *ExprContext, s []any) (any, error) {
 		// Check if item is a map with for or if directives
 		if m, ok := item.(map[string]any); ok {
 			// Check for for directive first (should be evaluated before if)
-			if forExpr, ok := m["for"]; ok {
+			if forExpr, ok := m[e.config.ForDirective()]; ok {
 				processed, err := e.handleForWithContext(itemCtx, forExpr, m)
 				if err != nil {
 					return nil, err
@@ -168,9 +175,9 @@ func (e *Expr) processSliceWithContext(ctx *ExprContext, s []any) (any, error) {
 			}
 
 			// If no for directive, check if directive
-			if ifExpr, ok := m["if"]; ok {
+			if ifExpr, ok := m[e.config.IfDirective()]; ok {
 				// Evaluate condition
-				ok, err := evaluateConditionWithPath(ifExpr, ctx.Stack(), itemCtx.Path()+".if")
+				ok, err := evaluateConditionWithPath(ifExpr, ctx.Stack(), itemCtx.Path()+"."+e.config.IfDirective())
 				if err != nil {
 					return nil, err
 				}
@@ -179,7 +186,7 @@ func (e *Expr) processSliceWithContext(ctx *ExprContext, s []any) (any, error) {
 					continue
 				}
 				// Remove if from processing
-				delete(m, "if")
+				delete(m, e.config.IfDirective())
 			}
 		}
 
@@ -389,10 +396,10 @@ func (e *Expr) handleForWithContext(ctx *ExprContext, forExpr any, m map[string]
 		// Create new stack scope with loop variables
 		ctx.PushStackScope(scope)
 
-		// Create a fresh copy of the template for each iteration (all keys except "for")
+		// Create a fresh copy of the template for each iteration (all keys except for directive)
 		template := make(map[string]any)
 		for k, v := range m {
-			if k != "for" {
+			if k != e.config.ForDirective() {
 				template[k] = v
 			}
 		}

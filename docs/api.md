@@ -9,9 +9,23 @@ import (
 ## Types
 
 ```go
+// Config holds configuration options for the Expr evaluator.
+type Config struct {
+	// syntax defines the directive keywords used in YAML documents
+	syntax Syntax
+}
+```
+
+```go
+// ConfigOption is a functional option for configuring an Expr instance.
+type ConfigOption func(*Config)
+```
+
+```go
 // Expr evaluates YAML documents with variable interpolation, conditionals, and composition.
 type Expr struct {
-	fs fs.FS
+	fs     fs.FS
+	config *Config
 }
 ```
 
@@ -56,10 +70,39 @@ type ForLoopExpr struct {
 }
 ```
 
+```go
+// Syntax defines the directive keywords used in YAML documents.
+// Empty fields retain their default values when merged with defaults.
+type Syntax struct {
+	// If is the directive keyword for conditional blocks (default: "if")
+	If string `json:"if" yaml:"if"`
+	// For is the directive keyword for iteration blocks (default: "for")
+	For string `json:"for" yaml:"for"`
+	// Include is the directive keyword for file inclusion (default: "include")
+	Include string `json:"include" yaml:"include"`
+}
+```
+
+## Vars
+
+```go
+// DefaultSyntax is the default syntax configuration with standard directive names.
+var DefaultSyntax = Syntax{
+	If:      "if",
+	For:     "for",
+	Include: "include",
+}
+```
+
 ## Function symbols
 
-- `func New (rootFS fs.FS) *Expr`
+- `func DefaultConfig () *Config`
+- `func New (rootFS fs.FS, opts ...ConfigOption) *Expr`
 - `func NewExprContext (options *ExprContextOptions) *ExprContext`
+- `func WithSyntax (syntax Syntax) ConfigOption`
+- `func (*Config) ForDirective () string`
+- `func (*Config) IfDirective () string`
+- `func (*Config) IncludeDirective () string`
 - `func (*Expr) Load (filename string) (map[string]any, error)`
 - `func (*Expr) Process (doc any, rootVars map[string]any) (any, error)`
 - `func (*Expr) ProcessWithStack (doc any, st *stack.Stack) (any, error)`
@@ -72,12 +115,20 @@ type ForLoopExpr struct {
 - `func (*ExprContext) WithInclude (filename string) *ExprContext`
 - `func (*ExprContext) WithPath (newPath string) *ExprContext`
 
-### New
+### DefaultConfig
 
-New creates a new Expr evaluator with the given filesystem for includes.
+DefaultConfig returns the default configuration with standard directive names.
 
 ```go
-func New(rootFS fs.FS) *Expr
+func DefaultConfig() *Config
+```
+
+### New
+
+New creates a new Expr evaluator with the given filesystem for includes. Optional ConfigOption arguments can be passed to customize directive syntax.
+
+```go
+func New(rootFS fs.FS, opts ...ConfigOption) *Expr
 ```
 
 ### NewExprContext
@@ -86,6 +137,58 @@ NewExprContext returns an ExprContext initialized for the given options.
 
 ```go
 func NewExprContext(options *ExprContextOptions) *ExprContext
+```
+
+### WithSyntax
+
+WithSyntax sets custom directive syntax, preserving defaults for empty fields. Empty string values in the Syntax struct will use the default keywords.
+
+Example:
+
+```
+e := yamlexpr.New(fs, yamlexpr.WithSyntax(yamlexpr.Syntax{
+	If:      "v-if",
+	For:     "v-for",
+	Include: "v-include",
+}))
+```
+
+Or partially customize (empty fields keep defaults):
+
+```
+e := yamlexpr.New(fs, yamlexpr.WithSyntax(yamlexpr.Syntax{
+	If:  "v-if",
+	For: "v-for",
+	// Include remains "include"
+}))
+```
+
+```go
+func WithSyntax(syntax Syntax) ConfigOption
+```
+
+### ForDirective
+
+ForDirective returns the current for directive keyword.
+
+```go
+func (*Config) ForDirective() string
+```
+
+### IfDirective
+
+IfDirective returns the current if directive keyword.
+
+```go
+func (*Config) IfDirective() string
+```
+
+### IncludeDirective
+
+IncludeDirective returns the current include directive keyword.
+
+```go
+func (*Config) IncludeDirective() string
 ```
 
 ### Load

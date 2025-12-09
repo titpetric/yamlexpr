@@ -1,0 +1,59 @@
+version: "3"
+enable_linting: true
+enable_benchmarks: false
+test_environments:
+  - name: "linux"
+    runs_on: "linux"
+    enabled: true
+  - name: "macos"
+    runs_on: "macos"
+    enabled: true
+
+tasks:
+  fmt:
+    desc: "Format code"
+    cmds:
+      - gofumpt -w .
+  test:
+    desc: "Run tests"
+    cmds:
+      - go test ./...
+  lint:
+    if: ${enable_linting}
+    desc: "Lint code"
+    cmds:
+      - golangci-lint run ./...
+  bench:
+    if: ${enable_benchmarks}
+    desc: "Run benchmarks"
+    cmds:
+      - go test -bench=. ./...
+  matrix-test:
+    for: env in test_environments
+    if: env.enabled
+    desc: "Test on ${env.name}"
+    cmds:
+      - go test -v ./...
+---
+version: "3"
+tasks:
+  fmt:
+    desc: "Format code"
+    cmds:
+      - gofumpt -w .
+  test:
+    desc: "Run tests"
+    cmds:
+      - go test ./...
+  lint:
+    desc: "Lint code"
+    cmds:
+      - golangci-lint run ./...
+  matrix-test:
+    desc: "Test on linux"
+    cmds:
+      - go test -v ./...
+  matrix-test:
+    desc: "Test on macos"
+    cmds:
+      - go test -v ./...
