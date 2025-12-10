@@ -46,6 +46,11 @@ type Stack struct {
 	rootData any              // original data passed to Render (for struct field fallback)
 }
 
+// New returns a new empty stack.
+func New() *Stack {
+	return NewStack(nil)
+}
+
 // NewStack constructs a Stack with an optional initial root map (nil allowed).
 // The originalData parameter is the original value passed to Render (for struct field fallback).
 func NewStack(root map[string]any) *Stack {
@@ -73,7 +78,7 @@ var mapPool = sync.Pool{
 // Copy returns a copy of the stack that can be discarded.
 // The root data is retained as is, the envmap is a copy.
 func (s *Stack) Copy() *Stack {
-	return NewStackWithData(s.EnvMap(), s.rootData)
+	return NewStackWithData(s.All(), s.rootData)
 }
 
 // Push a new map as a top-most Stack.
@@ -279,9 +284,9 @@ func (s *Stack) GetMap(expr string) (map[string]any, bool) {
 	}
 }
 
-// EnvMap converts the Stack to a map[string]any for expr evaluation.
+// All converts the Stack to a map[string]any for expr evaluation.
 // Includes all accessible values from stack and struct fields.
-func (s *Stack) EnvMap() map[string]any {
+func (s *Stack) All() map[string]any {
 	result := make(map[string]any)
 	// Iterate through stack from bottom to top, with top overriding bottom
 	for i := 0; i < len(s.stack); i++ {

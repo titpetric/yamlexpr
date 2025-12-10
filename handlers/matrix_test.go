@@ -1,7 +1,13 @@
 package handlers_test
 
 import (
+	"io/fs"
+	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/titpetric/yamlexpr"
 )
 
 // Note: Full matrix handler tests require integration with Expr.processMapWithContext
@@ -35,9 +41,20 @@ import (
 //           version: 14
 
 func TestMatrixHandler_Documentation(t *testing.T) {
-	// This test documents the expected behavior
-	// See testdata/fixtures/ for actual test cases
-	t.Log("Matrix handler tests are in fixture tests")
-	t.Log("Pattern: testdata/fixtures/2XX-matrix-*.yaml")
-	t.Log("See MATRIX_SPEC_COMPARISON.md for test specifications")
+	fixtureTest(t, os.DirFS("../testdata/fixtures"), "200-matrix-simple.yaml")
+}
+
+// fixtureTest executes the standard fixture assertions against all supplied
+// filenames using the provided filesystem.
+func fixtureTest(tb testing.TB, fixtureFS fs.FS, filenames ...string) {
+	tb.Helper()
+
+	expr := yamlexpr.New(yamlexpr.WithFS(fixtureFS))
+
+	for _, fn := range filenames {
+		result, err := expr.Load(fn)
+		assert.NoError(tb, err)
+		assert.NotNil(tb, result)
+		assert.IsType(tb, map[string]any{}, result)
+	}
 }

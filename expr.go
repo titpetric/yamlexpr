@@ -89,7 +89,7 @@ func (e *Expr) Process(doc any, rootVars map[string]any) (any, error) {
 		}
 	}
 
-	return e.ProcessWithStack(doc, stack.New(rootVars))
+	return e.ProcessWithStack(doc, stack.NewStack(rootVars))
 }
 
 // Load loads a YAML file and processes it with expression evaluation.
@@ -125,7 +125,7 @@ func (e *Expr) Load(filename string) (map[string]any, error) {
 // ProcessWithStack processes a YAML document with a given variable stack.
 func (e *Expr) ProcessWithStack(doc any, st *stack.Stack) (any, error) {
 	if st == nil {
-		st = stack.New(nil)
+		st = stack.New()
 	}
 	ctx := model.NewContext(&model.ContextOptions{
 		Stack: st,

@@ -10,7 +10,7 @@ import (
 )
 
 func TestNewExprContext(t *testing.T) {
-	st := stack.New(map[string]any{"name": "test"})
+	st := stack.NewStack(map[string]any{"name": "test"})
 	ctx := yamlexpr.NewExprContext(&yamlexpr.ExprContextOptions{
 		Stack: st,
 		Path:  "root",
@@ -28,7 +28,7 @@ func TestNewExprContext_Defaults(t *testing.T) {
 }
 
 func TestExprContext_WithPath(t *testing.T) {
-	st := stack.New(nil)
+	st := stack.New()
 	ctx := yamlexpr.NewExprContext(&yamlexpr.ExprContextOptions{
 		Stack: st,
 		Path:  "root",
@@ -91,7 +91,7 @@ func TestExprContext_FormatIncludeChain_Empty(t *testing.T) {
 }
 
 func TestExprContext_StackScope(t *testing.T) {
-	st := stack.New(map[string]any{"x": 1})
+	st := stack.NewStack(map[string]any{"x": 1})
 	ctx := yamlexpr.NewExprContext(&yamlexpr.ExprContextOptions{Stack: st})
 
 	// Push new scope
@@ -108,7 +108,7 @@ func TestExprContext_StackScope(t *testing.T) {
 }
 
 func TestExprContext_SharedStack(t *testing.T) {
-	st := stack.New(map[string]any{"x": 1})
+	st := stack.NewStack(map[string]any{"x": 1})
 	ctx1 := yamlexpr.NewExprContext(&yamlexpr.ExprContextOptions{
 		Stack: st,
 		Path:  "path1",

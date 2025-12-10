@@ -80,7 +80,7 @@ func NewContext(options *ContextOptions) *Context {
 	}
 
 	if ctx.stack == nil {
-		ctx.stack = stack.New(nil)
+		ctx.stack = stack.New()
 	}
 	if ctx.includeChain == nil {
 		ctx.includeChain = []string{}

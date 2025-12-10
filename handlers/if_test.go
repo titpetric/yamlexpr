@@ -32,7 +32,7 @@ func TestEvaluateConditionWithPath_Boolean(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := handlers.EvaluateConditionWithPath(tt.value, stack.New(nil), "")
+			result, err := handlers.EvaluateConditionWithPath(tt.value, stack.New(), "")
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, result)
 		})
@@ -55,7 +55,7 @@ func TestEvaluateConditionWithPath_StringLiterals(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := handlers.EvaluateConditionWithPath(tt.value, stack.New(nil), "")
+			result, err := handlers.EvaluateConditionWithPath(tt.value, stack.New(), "")
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, result)
 		})
@@ -63,13 +63,13 @@ func TestEvaluateConditionWithPath_StringLiterals(t *testing.T) {
 }
 
 func TestEvaluateConditionWithPath_InvalidType(t *testing.T) {
-	_, err := handlers.EvaluateConditionWithPath([]string{"foo"}, stack.New(nil), "")
+	_, err := handlers.EvaluateConditionWithPath([]string{"foo"}, stack.New(), "")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unsupported condition type")
 }
 
 func TestEvaluateConditionWithPath_InvalidString(t *testing.T) {
-	_, err := handlers.EvaluateConditionWithPath("maybe", stack.New(nil), "test.if")
+	_, err := handlers.EvaluateConditionWithPath("maybe", stack.New(), "test.if")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "at test.if")
 }

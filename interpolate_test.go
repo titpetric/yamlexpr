@@ -35,9 +35,9 @@ func TestInterpolateStringHelper(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var st *stack.Stack
 			if tt.stack != nil {
-				st = stack.New(tt.stack)
+				st = stack.NewStack(tt.stack)
 			} else {
-				st = stack.New(nil)
+				st = stack.New()
 			}
 			got, err := handlers.InterpolateString(tt.input, st)
 			require.NoError(t, err)
@@ -101,7 +101,7 @@ func TestInterpolateStringWithContext(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			st := stack.New(tt.stack)
+			st := stack.NewStack(tt.stack)
 			got, err := handlers.InterpolateStringWithContext(tt.input, st, "")
 			if tt.wantErr {
 				require.Error(t, err)
@@ -115,7 +115,7 @@ func TestInterpolateStringWithContext(t *testing.T) {
 
 // TestInterpolateStringWithContext_PathInError tests that path is included in errors.
 func TestInterpolateStringWithContext_PathInError(t *testing.T) {
-	st := stack.New(map[string]any{})
+	st := stack.NewStack(map[string]any{})
 	_, err := handlers.InterpolateStringWithContext("value: ${missing}", st, "config.item")
 	require.Error(t, err)
 	// Path should be included in error message

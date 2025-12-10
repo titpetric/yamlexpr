@@ -12,7 +12,7 @@ import (
 // that doesn't error on missing variables.
 func InterpolateString(s string, st *stack.Stack) (string, error) {
 	if st == nil {
-		st = stack.New(nil)
+		st = stack.New()
 	}
 
 	interpolationPattern := regexp.MustCompile(`\$\{([^}]+)\}`)

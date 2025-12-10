@@ -35,7 +35,7 @@ func TestContainsInterpolation(t *testing.T) {
 
 // TestInterpolateString tests the InterpolateString function with lenient mode (from util.go).
 func TestInterpolateString(t *testing.T) {
-	st := stack.New(map[string]any{
+	st := stack.NewStack(map[string]any{
 		"name":  "world",
 		"count": 42,
 	})
@@ -64,7 +64,7 @@ func TestInterpolateString(t *testing.T) {
 
 // TestInterpolateStringWithContext tests interpolation with strict error handling.
 func TestInterpolateStringWithContext(t *testing.T) {
-	st := stack.New(map[string]any{
+	st := stack.NewStack(map[string]any{
 		"name":  "world",
 		"count": 42,
 	})
@@ -98,7 +98,7 @@ func TestInterpolateStringWithContext(t *testing.T) {
 
 // TestInterpolateValue tests interpolation of various value types.
 func TestInterpolateValue(t *testing.T) {
-	st := stack.New(map[string]any{
+	st := stack.NewStack(map[string]any{
 		"name": "Alice",
 	})
 
