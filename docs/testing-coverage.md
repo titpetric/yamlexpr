@@ -12,10 +12,10 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                     | Coverage | Cognitive | Lines |
 |--------|-----------------------------|----------|-----------|-------|
-| ✅     | titpetric/yamlexpr          | 81.96%   | 107       | 476   |
-| ❌     | titpetric/yamlexpr/handlers | 57.40%   | 308       | 990   |
+| ❌     | titpetric/yamlexpr          | 78.08%   | 107       | 476   |
+| ❌     | titpetric/yamlexpr/handlers | 55.61%   | 308       | 990   |
 | ✅     | titpetric/yamlexpr/model    | 100.00%  | 12        | 94    |
-| ❌     | titpetric/yamlexpr/stack    | 78.07%   | 92        | 329   |
+| ❌     | titpetric/yamlexpr/stack    | 78.55%   | 92        | 329   |
 
 ## Functions
 
@@ -26,31 +26,31 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/yamlexpr          | Config.GetHandler                | 0.00%    | 1         |
 | ✅     | titpetric/yamlexpr          | Config.IfDirective               | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr          | DefaultConfig                    | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr          | Expr.Load                        | 69.20%   | 4         |
+| ✅     | titpetric/yamlexpr          | Expr.Load                        | 76.90%   | 4         |
 | ✅     | titpetric/yamlexpr          | Expr.LoadAndMergeFileWithContext | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr          | Expr.Process                     | 100.00%  | 4         |
 | ✅     | titpetric/yamlexpr          | Expr.ProcessMapWithContext       | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr          | Expr.ProcessWithContext          | 0.00%    | 0         |
 | ✅     | titpetric/yamlexpr          | Expr.ProcessWithStack            | 75.00%   | 1         |
 | ✅     | titpetric/yamlexpr          | Expr.RegisterHandler             | 80.00%   | 2         |
-| ✅     | titpetric/yamlexpr          | Expr.loadAndMergeFileWithContext | 83.30%   | 3         |
+| ✅     | titpetric/yamlexpr          | Expr.loadAndMergeFileWithContext | 75.00%   | 3         |
 | ✅     | titpetric/yamlexpr          | Expr.processMapWithContext       | 92.60%   | 28        |
-| ✅     | titpetric/yamlexpr          | Expr.processSliceWithContext     | 88.90%   | 5         |
+| ✅     | titpetric/yamlexpr          | Expr.processSliceWithContext     | 100.00%  | 5         |
 | ✅     | titpetric/yamlexpr          | Expr.processWithContext          | 100.00%  | 1         |
 | ✅     | titpetric/yamlexpr          | New                              | 100.00%  | 2         |
 | ✅     | titpetric/yamlexpr          | NewExprContext                   | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr          | NewExtended                      | 100.00%  | 0         |
+| ✅     | titpetric/yamlexpr          | NewExtended                      | 0.00%    | 0         |
 | ❌     | titpetric/yamlexpr          | WithDirectiveHandler             | 0.00%    | 4         |
 | ✅     | titpetric/yamlexpr          | WithFS                           | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr          | WithStandardHandlers             | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr          | WithSyntax                       | 100.00%  | 6         |
 | ✅     | titpetric/yamlexpr          | isValidVarName                   | 100.00%  | 1         |
-| ❌     | titpetric/yamlexpr          | mergeRecursive                   | 53.80%   | 31        |
+| ❌     | titpetric/yamlexpr          | mergeRecursive                   | 38.50%   | 31        |
 | ✅     | titpetric/yamlexpr          | parseForExpr                     | 95.20%   | 13        |
 | ✅     | titpetric/yamlexpr          | parseYAML                        | 75.00%   | 1         |
 | ✅     | titpetric/yamlexpr/handlers | BuildScope                       | 90.90%   | 9         |
 | ✅     | titpetric/yamlexpr/handlers | ContainsInterpolation            | 100.00%  | 1         |
-| ✅     | titpetric/yamlexpr/handlers | EmbedHandlerBuiltin              | 91.70%   | 19        |
+| ❌     | titpetric/yamlexpr/handlers | EmbedHandlerBuiltin              | 41.70%   | 19        |
 | ❌     | titpetric/yamlexpr/handlers | EvaluateConditionWithPath        | 76.50%   | 23        |
 | ❌     | titpetric/yamlexpr/handlers | ForHandlerBuiltin                | 56.10%   | 60        |
 | ✅     | titpetric/yamlexpr/handlers | IfHandlerBuiltin                 | 85.70%   | 4         |
@@ -96,7 +96,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/yamlexpr/stack    | Stack.Lookup                     | 100.00%  | 3         |
 | ✅     | titpetric/yamlexpr/stack    | Stack.Pop                        | 81.80%   | 6         |
 | ✅     | titpetric/yamlexpr/stack    | Stack.Push                       | 66.70%   | 1         |
-| ✅     | titpetric/yamlexpr/stack    | Stack.Resolve                    | 84.60%   | 7         |
+| ✅     | titpetric/yamlexpr/stack    | Stack.Resolve                    | 92.30%   | 7         |
 | ✅     | titpetric/yamlexpr/stack    | Stack.Set                        | 66.70%   | 1         |
 | ❌     | titpetric/yamlexpr/stack    | Stack.resolveStep                | 77.80%   | 7         |
 | ✅     | titpetric/yamlexpr/stack    | getCachedPath                    | 100.00%  | 2         |
