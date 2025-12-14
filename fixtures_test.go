@@ -58,12 +58,6 @@ func TestExpr_Load(t *testing.T) {
 			continue
 		}
 
-		// Skip root-level for/matrix fixtures (150-199: root-level for, 200+: root-level matrix)
-		// These are tested in TestExpr_LoadMulti
-		if strings.HasPrefix(name, "1") && name >= "150" || strings.HasPrefix(name, "2") {
-			continue
-		}
-
 		if filepath.Ext(name) != ".yaml" {
 			continue
 		}
@@ -104,7 +98,7 @@ func TestExpr_Load_RootLevelExpansion(t *testing.T) {
 
 		// Only process root-level for fixtures (150-199)
 		// Note: matrix fixtures (200+) have list-level matrix, not root-level
-		if !(strings.HasPrefix(name, "1") && name >= "150" && name < "200") {
+		if !strings.HasPrefix(name, "1") || name < "150" || name >= "200" {
 			continue
 		}
 

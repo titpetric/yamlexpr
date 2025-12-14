@@ -1,4 +1,4 @@
-package yamlexpr_test
+package model_test
 
 import (
 	"testing"
@@ -20,16 +20,16 @@ func TestNew_StandardHandlers(t *testing.T) {
 		"items": []any{"a", "b"},
 	}
 
+	want := []any{
+		map[string]any{
+			"name":  "test",
+			"items": []any{"a", "b"},
+		},
+	}
+
 	result, err := e.Process(doc, nil)
 	require.NoError(t, err)
-
-	m, ok := result.(map[string]any)
-	require.True(t, ok)
-
-	// if directive should be processed and removed
-	require.NotContains(t, m, "if")
-	require.Contains(t, m, "name")
-	require.Equal(t, "test", m["name"])
+	require.Equals(t, want, result)
 }
 
 func TestNew_DefaultSyntax(t *testing.T) {
@@ -43,9 +43,22 @@ func TestNew_DefaultSyntax(t *testing.T) {
 		"items": []any{"a", "b"},
 	}
 
+	want := []any{
+		map[string]any{
+			"for":   "item in items",
+			"name":  "a",
+			"items": []any{"a", "b"},
+		},
+		map[string]any{
+			"for":   "item in items",
+			"name":  "b",
+			"items": []any{"a", "b"},
+		},
+	}
+
 	result, err := e.Process(doc, nil)
 	require.NoError(t, err)
-	require.NotNil(t, result)
+	require.Equals(t, want, result)
 }
 
 func TestNew_CustomIfSyntax(t *testing.T) {

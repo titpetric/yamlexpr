@@ -76,13 +76,6 @@ func TestBuildScope(t *testing.T) {
 	}
 }
 
-// TestNewForHandler tests that NewForHandler returns a valid handler.
-func TestNewForHandler(t *testing.T) {
-	handler := handlers.NewForHandler()
-	require.NotNil(t, handler)
-	require.IsType(t, &handlers.ForHandlerImpl{}, handler)
-}
-
 // TestParseForExpr tests the ParseForExpr function.
 func TestParseForExpr(t *testing.T) {
 	tests := []struct {
@@ -162,10 +155,4 @@ func TestParseForExpr(t *testing.T) {
 			}
 		})
 	}
-}
-
-// TestForHandler tests the for handler builtin.
-func TestForHandler(t *testing.T) {
-	handler := handlers.ForHandler(nil, "for")
-	require.NotNil(t, handler)
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func TestDiscardHandler_True(t *testing.T) {
-	handler := handlers.DiscardHandlerBuiltin()
+	handler := handlers.Discard()
 	ctx := model.NewContext(nil)
 	result, consumed, err := handler(ctx, map[string]any{}, true)
 
@@ -20,7 +20,7 @@ func TestDiscardHandler_True(t *testing.T) {
 }
 
 func TestDiscardHandler_False(t *testing.T) {
-	handler := handlers.DiscardHandlerBuiltin()
+	handler := handlers.Discard()
 	ctx := model.NewContext(nil)
 	result, consumed, err := handler(ctx, map[string]any{}, false)
 
@@ -30,7 +30,7 @@ func TestDiscardHandler_False(t *testing.T) {
 }
 
 func TestDiscardHandler_StringTrue(t *testing.T) {
-	handler := handlers.DiscardHandlerBuiltin()
+	handler := handlers.Discard()
 	ctx := model.NewContext(nil)
 	result, consumed, err := handler(ctx, map[string]any{}, "true")
 
@@ -40,7 +40,7 @@ func TestDiscardHandler_StringTrue(t *testing.T) {
 }
 
 func TestDiscardHandler_StringFalse(t *testing.T) {
-	handler := handlers.DiscardHandlerBuiltin()
+	handler := handlers.Discard()
 	ctx := model.NewContext(nil)
 	result, consumed, err := handler(ctx, map[string]any{}, "false")
 
@@ -50,7 +50,7 @@ func TestDiscardHandler_StringFalse(t *testing.T) {
 }
 
 func TestDiscardHandler_InvalidString(t *testing.T) {
-	handler := handlers.DiscardHandlerBuiltin()
+	handler := handlers.Discard()
 	ctx := model.NewContext(nil)
 	_, _, err := handler(ctx, map[string]any{}, "maybe")
 
@@ -59,7 +59,7 @@ func TestDiscardHandler_InvalidString(t *testing.T) {
 }
 
 func TestDiscardHandler_InvalidType(t *testing.T) {
-	handler := handlers.DiscardHandlerBuiltin()
+	handler := handlers.Discard()
 	ctx := model.NewContext(nil)
 	_, _, err := handler(ctx, map[string]any{}, []string{"foo"})
 
@@ -68,7 +68,7 @@ func TestDiscardHandler_InvalidType(t *testing.T) {
 }
 
 func TestDiscardHandler_Nil(t *testing.T) {
-	handler := handlers.DiscardHandlerBuiltin()
+	handler := handlers.Discard()
 	ctx := model.NewContext(nil)
 	result, consumed, err := handler(ctx, map[string]any{}, nil)
 
@@ -90,7 +90,7 @@ func TestDiscardHandler_Integer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := handlers.DiscardHandlerBuiltin()
+			handler := handlers.Discard()
 			ctx := model.NewContext(nil)
 			result, consumed, err := handler(ctx, map[string]any{}, tt.value)
 

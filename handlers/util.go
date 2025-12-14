@@ -10,7 +10,7 @@ import (
 // InterpolateString replaces ${varname} placeholders with stack values.
 // Non-string values are returned as-is. This is a simplified version
 // that doesn't error on missing variables.
-func InterpolateString(s string, st *stack.Stack) (string, error) {
+func InterpolateString(st *stack.Stack, s string) (string, error) {
 	if st == nil {
 		st = stack.New()
 	}

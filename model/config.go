@@ -1,13 +1,8 @@
-package yamlexpr
+package model
 
 import (
 	"io/fs"
-
-	"github.com/titpetric/yamlexpr/model"
 )
-
-// DirectiveHandler is a backwards-compatible alias for model.DirectiveHandler.
-type DirectiveHandler = model.DirectiveHandler
 
 // Syntax defines the directive keywords used in YAML documents.
 // Empty fields retain their default values when merged with defaults.
@@ -18,6 +13,8 @@ type Syntax struct {
 	For string `json:"for" yaml:"for"`
 	// Include is the directive keyword for file inclusion/composition (default: "include").
 	Include string `json:"include" yaml:"include"`
+	// Matrix is the directive keyword for matrix iteration (default: "matrix").
+	Matrix string `json:"matrix" yaml:"matrix"`
 }
 
 // DefaultSyntax is the default syntax configuration with standard directive names.
@@ -25,25 +22,26 @@ var DefaultSyntax = Syntax{
 	If:      "if",
 	For:     "for",
 	Include: "include",
+	Matrix:  "matrix",
 }
 
 // Config holds configuration options for the Expr evaluator.
 type Config struct {
 	// syntax defines the directive keywords used in YAML documents
-	syntax Syntax
+	Syntax Syntax
 	// handlers maps directive names to their handler functions
-	handlers map[string]DirectiveHandler
+	Handlers map[string]DirectiveHandler
 	// handlerOrder tracks the order handlers were registered (for deterministic evaluation)
-	handlerOrder []string
+	HandlerOrder []string
 	// filesystem is the FS used for loading resources (can be nil)
-	filesystem fs.FS
+	FS fs.FS
 }
 
 // DefaultConfig returns the default configuration with standard directive names.
 func DefaultConfig() *Config {
 	return &Config{
-		syntax:   DefaultSyntax,
-		handlers: make(map[string]DirectiveHandler),
+		Syntax:   DefaultSyntax,
+		Handlers: make(map[string]DirectiveHandler),
 	}
 }
 
@@ -72,30 +70,38 @@ func WithSyntax(syntax Syntax) ConfigOption {
 	return func(cfg *Config) {
 		// Apply non-empty fields, keeping defaults for empty ones
 		if syntax.If != "" {
-			cfg.syntax.If = syntax.If
+			cfg.Syntax.If = syntax.If
 		}
 		if syntax.For != "" {
-			cfg.syntax.For = syntax.For
+			cfg.Syntax.For = syntax.For
 		}
 		if syntax.Include != "" {
-			cfg.syntax.Include = syntax.Include
+			cfg.Syntax.Include = syntax.Include
+		}
+		if syntax.Matrix != "" {
+			cfg.Syntax.Matrix = syntax.Matrix
 		}
 	}
 }
 
 // IfDirective returns the current if directive keyword.
 func (c *Config) IfDirective() string {
-	return c.syntax.If
+	return c.Syntax.If
 }
 
 // ForDirective returns the current for directive keyword.
 func (c *Config) ForDirective() string {
-	return c.syntax.For
+	return c.Syntax.For
 }
 
 // IncludeDirective returns the current include directive keyword.
 func (c *Config) IncludeDirective() string {
-	return c.syntax.Include
+	return c.Syntax.Include
+}
+
+// MatrixDirective returns the current matrix directive keyword.
+func (c *Config) MatrixDirective() string {
+	return c.Syntax.Matrix
 }
 
 // WithDirectiveHandler registers a custom handler for a directive name.
@@ -112,14 +118,14 @@ func (c *Config) IncludeDirective() string {
 // it overrides the default implementation for that directive.
 func WithDirectiveHandler(directive string, handler DirectiveHandler) ConfigOption {
 	return func(cfg *Config) {
-		if cfg.handlers == nil {
-			cfg.handlers = make(map[string]DirectiveHandler)
+		if cfg.Handlers == nil {
+			cfg.Handlers = make(map[string]DirectiveHandler)
 		}
 		// Track order of registration if this is a new handler
-		if _, exists := cfg.handlers[directive]; !exists {
-			cfg.handlerOrder = append(cfg.handlerOrder, directive)
+		if _, exists := cfg.Handlers[directive]; !exists {
+			cfg.HandlerOrder = append(cfg.HandlerOrder, directive)
 		}
-		cfg.handlers[directive] = handler
+		cfg.Handlers[directive] = handler
 	}
 }
 
@@ -131,6 +137,6 @@ func WithDirectiveHandler(directive string, handler DirectiveHandler) ConfigOpti
 //	e := yamlexpr.New(yamlexpr.WithFS(myFS))
 func WithFS(filesystem fs.FS) ConfigOption {
 	return func(cfg *Config) {
-		cfg.filesystem = filesystem
+		cfg.FS = filesystem
 	}
 }

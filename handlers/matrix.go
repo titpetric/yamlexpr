@@ -11,9 +11,6 @@ import (
 // Implements GitHub Actions matrix strategy with cartesian product expansion,
 // exclude rules (partial match), and include rules (exact match or new job).
 //
-// Note: This handler requires access to Expr.processMapWithContext (private method).
-// It must be called from within expr.go's processMapWithContext function.
-//
 // Usage in YAML:
 //
 //	jobs:
@@ -40,8 +37,8 @@ import (
 // Warning: This implementation cannot be used standalone without integration
 // into expr.go's handler system. The handler field signature will be updated
 // to include processFunc for recursive processing.
-func NewMatrixHandler() DirectiveHandler {
-	return func(ctx *model.Context, block map[string]any, value any) (any, bool, error) {
+func xxxMatrix(matrixDirective string) DirectiveHandler {
+	return func(ctx *model.Context, block map[string]any, value any) ([]any, bool, error) {
 		matrixMap, ok := value.(map[string]any)
 		if !ok {
 			return nil, false, fmt.Errorf("matrix must be a map, got %T", value)
@@ -67,7 +64,15 @@ func NewMatrixHandler() DirectiveHandler {
 
 		// Return jobs for processing in expr.go
 		// (The actual template processing happens inside expr.go)
-		return jobs, true, nil // consumed = true
+
+		if len(jobs) > 0 {
+			result := make([]any, 0, len(jobs))
+			for _, job := range jobs {
+				result = append(result, job)
+			}
+			return result, true, nil
+		}
+		return nil, true, nil
 	}
 }
 
@@ -284,78 +289,84 @@ func valuesEqual(a, b any) bool {
 // ExpandMatrixAtRoot expands a root-level matrix directive into multiple job configurations.
 // Returns a slice of processed maps, one for each matrix combination.
 // This is used by Expr.Process to handle root-level matrix expansion.
-func ExpandMatrixAtRoot(ctx *model.Context, template map[string]any, processor Processor) ([]any, error) {
-	matrixValue, ok := template["matrix"]
-	if !ok {
-		return nil, fmt.Errorf("matrix key not found")
-	}
-
-	matrixMap, ok := matrixValue.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("matrix must be a map, got %T", matrixValue)
-	}
-
-	// Parse matrix directive
-	matrixDir, err := parseMatrixDirective(matrixMap)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing matrix: %w", err)
-	}
-
-	// Expand base matrix (cartesian product)
-	jobs := expandMatrixBase(matrixDir)
-
-	// Apply exclude rules
-	jobs = applyExcludes(jobs, matrixDir.Exclude)
-
-	// Apply include rules
-	jobs, err = applyEmbeds(jobs, matrixDir.Include)
-	if err != nil {
-		return nil, fmt.Errorf("error applying include rules: %w", err)
-	}
-
-	// Collect all dimension keys for null-filling
-	allKeys := make(map[string]bool)
-	for _, job := range jobs {
-		for k := range job {
-			allKeys[k] = true
-		}
-	}
-
-	// Process each job with matrix variables in scope
-	result := make([]any, 0, len(jobs))
-	for _, jobVars := range jobs {
-		// Ensure all dimension keys are present (fill missing with null)
-		for k := range allKeys {
-			if _, exists := jobVars[k]; !exists {
-				jobVars[k] = nil
-			}
+func Matrix(processor Processor, matrixDirective string) DirectiveHandler {
+	return func(ctx *model.Context, template map[string]any, _ any) ([]any, bool, error) {
+		returnErr := func(err error) ([]any, bool, error) {
+			return nil, false, err
 		}
 
-		// Create template copy without matrix directive
-		jobTemplate := make(map[string]any)
-		for k, v := range template {
-			if k != "matrix" {
-				jobTemplate[k] = v
-			}
+		matrixValue, ok := template[matrixDirective]
+		if !ok {
+			return returnErr(fmt.Errorf("matrix key not found"))
 		}
 
-		// Create context with job variables and process template
-		st := ctx.Stack()
-		st.Push(jobVars)
+		matrixMap, ok := matrixValue.(map[string]any)
+		if !ok {
+			return returnErr(fmt.Errorf("matrix must be a map, got %T", matrixValue))
+		}
 
-		jobCtx := ctx.WithPath(ctx.Path())
-
-		processed, err := processor.ProcessMapWithContext(jobCtx, jobTemplate)
-		st.Pop()
-
+		// Parse matrix directive
+		matrixDir, err := parseMatrixDirective(matrixMap)
 		if err != nil {
-			return nil, err
+			return returnErr(fmt.Errorf("error parsing matrix: %w", err))
 		}
 
-		if processed != nil {
-			result = append(result, processed)
+		// Expand base matrix (cartesian product)
+		jobs := expandMatrixBase(matrixDir)
+
+		// Apply exclude rules
+		jobs = applyExcludes(jobs, matrixDir.Exclude)
+
+		// Apply include rules
+		jobs, err = applyEmbeds(jobs, matrixDir.Include)
+		if err != nil {
+			return returnErr(fmt.Errorf("error applying include rules: %w", err))
 		}
+
+		// Collect all dimension keys for null-filling
+		allKeys := make(map[string]bool)
+		for _, job := range jobs {
+			for k := range job {
+				allKeys[k] = true
+			}
+		}
+
+		// Process each job with matrix variables in scope
+		result := make([]any, 0, len(jobs))
+		for _, jobVars := range jobs {
+			// Ensure all dimension keys are present (fill missing with null)
+			for k := range allKeys {
+				if _, exists := jobVars[k]; !exists {
+					jobVars[k] = nil
+				}
+			}
+
+			// Create template copy without matrix directive
+			jobTemplate := make(map[string]any)
+			for k, v := range template {
+				if k != "matrix" {
+					jobTemplate[k] = v
+				}
+			}
+
+			// Create context with job variables and process template
+			st := ctx.Stack()
+			st.Push(jobVars)
+
+			jobCtx := ctx.WithPath(ctx.Path())
+
+			processed, err := processor.ProcessMapWithContext(jobCtx, jobTemplate)
+			st.Pop()
+
+			if err != nil {
+				return returnErr(err)
+			}
+
+			if processed != nil {
+				result = append(result, processed)
+			}
+		}
+
+		return result, false, nil
 	}
-
-	return result, nil
 }

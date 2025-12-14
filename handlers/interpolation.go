@@ -23,7 +23,7 @@ func ContainsInterpolation(s string) bool {
 // Supports both simple variable references (${varname}) and expressions (${item * 2}).
 // It returns an error if a referenced variable doesn't exist or cannot be converted to string.
 // The path parameter is used for error context information.
-func InterpolateStringWithContext(s string, st *stack.Stack, path string) (string, error) {
+func InterpolateStringWithContext(st *stack.Stack, s string, path string) (string, error) {
 	var result strings.Builder
 	lastIdx := 0
 
@@ -129,7 +129,7 @@ func InterpolateValue(value any, st *stack.Stack, path string) (any, error) {
 				}
 			}
 			// Fall back to string interpolation
-			return InterpolateStringWithContext(v, st, path)
+			return InterpolateStringWithContext(st, v, path)
 		}
 		return v, nil
 	default:
@@ -168,7 +168,7 @@ func InterpolateValueWithContext(s string, st *stack.Stack, path string) (any, e
 	}
 
 	// Fall back to string interpolation
-	return InterpolateStringWithContext(s, st, path)
+	return InterpolateStringWithContext(st, s, path)
 }
 
 // isSingleInterpolation checks if a string contains exactly one ${...} expression
@@ -180,28 +180,6 @@ func isSingleInterpolation(s string) bool {
 	// Check if the expression spans the entire string (no text before or after)
 	match := matches[0]
 	return match[0] == 0 && match[1] == len(s)
-}
-
-// isComplexExpression checks if an expression contains operators (not just a simple variable reference).
-// Simple references like "item" or "item.field" return false.
-// Expressions like "item * 2", "item > 5", "len(item)" return true.
-func isComplexExpression(expr string) bool {
-	// List of operators that indicate a complex expression
-	operators := []string{
-		"*", "/", "%", "^", "**", // arithmetic
-		"+", "-", // arithmetic (but - could be in variable names, so be careful)
-		"==", "!=", "<", ">", "<=", ">=", // comparisons
-		"&&", "||", "!", "and", "or", "not", // logical
-		"(", ")", // function calls or grouping
-		"?", ":", // ternary
-	}
-
-	for _, op := range operators {
-		if strings.Contains(expr, op) {
-			return true
-		}
-	}
-	return false
 }
 
 // extractSingleExpression extracts the expression from a ${...} pattern
@@ -296,7 +274,7 @@ type InterpolationHandlerImpl struct{}
 // InterpolationHandlerBuiltin creates a handler for explicit interpolation control.
 // This allows interpolation to be triggered as a directive in YAML.
 func InterpolationHandlerBuiltin(interpolateDirective string) DirectiveHandler {
-	return func(ctx *model.Context, block map[string]any, value any) (any, bool, error) {
+	return func(ctx *model.Context, block map[string]any, value any) ([]any, bool, error) {
 		// Interpolation handler doesn't consume directives when used as a directive.
 		// It's typically applied automatically during value processing.
 		// If used explicitly as a directive, it returns nil to continue normal processing.

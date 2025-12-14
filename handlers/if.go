@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/expr-lang/expr"
@@ -10,49 +11,6 @@ import (
 	"github.com/titpetric/yamlexpr/stack"
 )
 
-// NewIfHandler returns a handler for the "if" directive.
-// Implements conditional block inclusion with support for:
-// - Boolean values: true/false
-// - Interpolated expressions: "${item.active}"
-// - Direct variable paths: item.active (converted to expressions via go-expr)
-// - Complex expressions: item.status == 'active', item.count > 5, etc.
-//
-// Usage in YAML:
-//
-//	items:
-//	  - name: "active"
-//	    if: true
-//	  - name: "conditional"
-//	    if: "${item.enabled}"
-//	  - name: "expression"
-//	    if: "item.count > 5"
-//
-// If the condition is false, the entire block is omitted (returns nil).
-//
-// Priority: 100 (runs after include, before custom handlers)
-func NewIfHandler() *IfHandlerImpl {
-	return &IfHandlerImpl{}
-}
-
-// IfHandlerImpl implements the if directive handler
-type IfHandlerImpl struct{}
-
-// Handle evaluates an if condition and returns nil (omit block) if false
-// Note: This signature matches DirectiveHandler but the if directive
-// is deeply integrated into expr.go. This is provided as a reference implementation.
-func (h *IfHandlerImpl) Handle(ctx *model.Context, block map[string]any, value any) (any, bool, error) {
-	ok, err := EvaluateConditionWithPath(value, ctx.Stack(), ctx.Path()+".if")
-	if err != nil {
-		return nil, false, err
-	}
-	if !ok {
-		// Return nil if condition is false (omit the entire block)
-		return nil, true, nil
-	}
-	// Continue with normal processing
-	return nil, false, nil
-}
-
 // EvaluateConditionWithPath evaluates an if condition with path context for error messages.
 // Supports:
 // - Boolean values: true/false
@@ -60,7 +18,7 @@ func (h *IfHandlerImpl) Handle(ctx *model.Context, block map[string]any, value a
 // - Direct variable paths: item.active (converted to expressions via go-expr)
 // - Complex expressions: item.status == 'active', item.count > 5, etc.
 // Returns errors with variable context and path if referenced variables don't exist.
-func EvaluateConditionWithPath(condition any, st *stack.Stack, path string) (bool, error) {
+func EvaluateConditionWithPath(st *stack.Stack, condition any, path string) (bool, error) {
 	switch v := condition.(type) {
 	case bool:
 		return v, nil
@@ -75,7 +33,7 @@ func EvaluateConditionWithPath(condition any, st *stack.Stack, path string) (boo
 
 		// Handle interpolated expressions like "${item.active}"
 		if strings.Contains(v, "${") {
-			str, err := InterpolateString(v, st)
+			str, err := InterpolateString(st, v)
 			if err != nil {
 				return false, err
 			}
@@ -165,16 +123,8 @@ func QuoteUnquotedComparisons(expr string) string {
 
 // isNumeric checks if a string represents a numeric value.
 func isNumeric(s string) bool {
-	if s == "" {
-		return false
-	}
-	// Check if string is a valid number (integer or float)
-	for i, ch := range s {
-		if !((ch >= '0' && ch <= '9') || ch == '.' || (i == 0 && ch == '-')) {
-			return false
-		}
-	}
-	return true
+	_, err := strconv.ParseFloat(s, 64)
+	return err == nil
 }
 
 // IsQuoted checks if a string is already quoted
@@ -206,11 +156,11 @@ func IsTruthy(v any) bool {
 	}
 }
 
-// IfHandler creates a handler for the "if" directive.
+// If creates a handler for the "if" directive.
 // Implements conditional block inclusion.
-func IfHandler(ifDirective string) DirectiveHandler {
-	return func(ctx *model.Context, block map[string]any, value any) (any, bool, error) {
-		ok, err := EvaluateConditionWithPath(value, ctx.Stack(), ctx.Path()+"."+ifDirective)
+func If(ifDirective string) DirectiveHandler {
+	return func(ctx *model.Context, block map[string]any, value any) ([]any, bool, error) {
+		ok, err := EvaluateConditionWithPath(ctx.Stack(), value, ctx.Path()+"."+ifDirective)
 		if err != nil {
 			return nil, false, err
 		}

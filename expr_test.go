@@ -22,17 +22,14 @@ func TestExpr_ProcessWithStack(t *testing.T) {
 	doc := map[string]any{"key": "value"}
 	result, err = e.ProcessWithStack(st, doc)
 	require.NoError(t, err)
-	m, ok := result.(map[string]any)
-	require.True(t, ok)
-	require.Equal(t, "value", m["key"])
+	require.Equal(t, doc, result[0])
 
 	// Test with slice
 	sliceDoc := []any{"a", "b", "c"}
 	result, err = e.ProcessWithStack(st, sliceDoc)
 	require.NoError(t, err)
-	s, ok := result.([]any)
 	require.True(t, ok)
-	require.Equal(t, 3, len(s))
+	require.Equal(t, sliceDoc, result[0])
 }
 
 func TestExpr_Process(t *testing.T) {

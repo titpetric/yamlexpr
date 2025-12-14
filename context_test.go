@@ -90,18 +90,18 @@ func TestExprContext_FormatIncludeChain_Empty(t *testing.T) {
 	require.Equal(t, "", ctx.FormatIncludeChain())
 }
 
-func TestExprContext_StackScope(t *testing.T) {
+func TestExprContext_(t *testing.T) {
 	st := stack.NewStack(map[string]any{"x": 1})
 	ctx := yamlexpr.NewExprContext(&yamlexpr.ExprContextOptions{Stack: st})
 
 	// Push new scope
-	ctx.PushStackScope(map[string]any{"y": 2})
+	ctx.Push(map[string]any{"y": 2})
 	val, ok := ctx.Stack().Resolve("y")
 	require.True(t, ok)
 	require.Equal(t, 2, val)
 
 	// Pop scope
-	ctx.PopStackScope()
+	ctx.Pop()
 	val2, ok2 := ctx.Stack().Resolve("y")
 	require.False(t, ok2)
 	require.Nil(t, val2)

@@ -55,7 +55,7 @@ func TestInterpolateString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := handlers.InterpolateString(tt.input, st)
+			result, err := handlers.InterpolateString(st, tt.input)
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, result)
 		})
@@ -85,7 +85,7 @@ func TestInterpolateStringWithContext(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := handlers.InterpolateStringWithContext(tt.input, st, tt.path)
+			result, err := handlers.InterpolateStringWithContext(st, tt.input, tt.path)
 			if tt.expectErr {
 				require.Error(t, err)
 			} else {

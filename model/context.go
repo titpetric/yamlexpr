@@ -6,41 +6,6 @@ import (
 	"github.com/titpetric/yamlexpr/stack"
 )
 
-// DirectiveHandler processes a custom YAML directive.
-//
-// Parameters:
-//   - ctx: Expression context with stack, path, include chain (*model.Context)
-//   - block: The containing YAML block (map with directive and template keys)
-//   - value: The directive value from YAML
-//
-// Returns:
-//   - result: The processed value
-//   - nil: Omit this block
-//   - map[string]any: Single item to use
-//   - []any: Multiple items to expand
-//   - consumed: Whether directive handles all processing
-//   - true: Skip normal key processing
-//   - false: Continue with normal key processing
-//   - error: Processing error with context
-type DirectiveHandler func(
-	ctx *Context,
-	block map[string]any,
-	value any,
-) (result any, consumed bool, err error)
-
-// Processor provides document processing capabilities to handlers.
-// Handlers use this to recursively process YAML documents.
-type Processor interface {
-	// ProcessWithContext processes a YAML document (any) with the given context.
-	ProcessWithContext(ctx *Context, doc any) (any, error)
-
-	// ProcessMapWithContext processes a YAML map with the given context.
-	ProcessMapWithContext(ctx *Context, m map[string]any) (any, error)
-
-	// LoadAndMergeFileWithContext loads a YAML file and merges it with the given context.
-	LoadAndMergeFileWithContext(ctx *Context, filename string, result map[string]any) error
-}
-
 // Context carries evaluation context and state used during YAML document processing.
 // Each Process operation gets its own Context, making concurrent processing safe.
 type Context struct {
@@ -53,18 +18,6 @@ type Context struct {
 
 	// includeChain tracks the chain of included files for error context
 	includeChain []string
-}
-
-// ContextOptions holds configurable options for a new Context.
-type ContextOptions struct {
-	// Stack is the resolver stack for variable lookups.
-	Stack *stack.Stack
-
-	// Path is the initial path in the document (defaults to "").
-	Path string
-
-	// IncludeChain is the initial chain of included files.
-	IncludeChain []string
 }
 
 // NewContext returns a Context initialized for the given options.
@@ -159,13 +112,13 @@ func (ctx *Context) FormatIncludeChain() string {
 	return strings.Join(ctx.includeChain, " -> ")
 }
 
-// PushStackScope pushes a new variable scope onto the stack.
+// Push pushes a new variable scope onto the stack.
 // Used when entering a for loop iteration or other scoped contexts.
-func (ctx *Context) PushStackScope(m map[string]any) {
+func (ctx *Context) Push(m map[string]any) {
 	ctx.stack.Push(m)
 }
 
-// PopStackScope pops the top-most variable scope from the stack.
-func (ctx *Context) PopStackScope() {
+// Pop pops the top-most variable scope from the stack.
+func (ctx *Context) Pop() {
 	ctx.stack.Pop()
 }
