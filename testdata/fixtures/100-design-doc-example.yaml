@@ -13,10 +13,10 @@ server_list:
     enabled: true
 ---
 servers:
-  - for: item in server_list
-    if: item.enabled
-    name: "${item.name}"
-    ip: "${item.ip}"
+   - for: item in server_list
+     if: item.enabled
+     name: ${item.name}
+     ip: ${item.ip}
 debug:
   if: ${enable_debug}
   level: "verbose"

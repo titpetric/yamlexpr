@@ -1,17 +1,17 @@
 servers:
-  - for:
-      - host: "web1"
-        port: 8080
-        enabled: true
-      - host: "web2"
-        port: 8080
-        enabled: false
-      - host: "db1"
-        port: 5432
-        enabled: true
-    if: item.enabled
-    address: "${item.host}:${item.port}"
-    running: true
+   - for:
+       - host: "web1"
+         port: 8080
+         enabled: true
+       - host: "web2"
+         port: 8080
+         enabled: false
+       - host: "db1"
+         port: 5432
+         enabled: true
+     if: item.enabled
+     address: ${item.host}:${item.port}
+     running: true
 ---
 servers:
   - address: "web1:8080"

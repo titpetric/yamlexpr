@@ -3,8 +3,8 @@ items: ["apple", "banana", "cherry"]
 ---
 # Part 2: Template with unquoted for directive
 output:
-  - for: item in items
-    value: "${item}"
+   - for: item in items
+     value: ${item}
 ---
 # Part 3: Expected result
 output:

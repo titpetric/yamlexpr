@@ -1,34 +1,52 @@
+services_data:
+  - name: "frontend"
+    tier: "web"
+    replicas: 3
+    autoscale: true
+  - name: "backend"
+    tier: "api"
+    replicas: 5
+    autoscale: true
+  - name: "monitor"
+    tier: "ops"
+    replicas: 1
+    autoscale: false
+  - name: "cache"
+    tier: "data"
+    replicas: 2
+    autoscale: false
 deployment:
   environment: "production"
   services:
-    - for:
-        - name: "frontend"
-          tier: "web"
-          replicas: 3
-          autoscale: true
-        - name: "backend"
-          tier: "api"
-          replicas: 5
-          autoscale: true
-        - name: "monitor"
-          tier: "ops"
-          replicas: 1
-          autoscale: false
-        - name: "cache"
-          tier: "data"
-          replicas: 2
-          autoscale: false
+    - for: item in services_data
       if: item.autoscale
-      service_name: "${item.name}"
-      tier_level: "${item.tier}"
-      instance_count: "${item.replicas}"
+      service_name: ${item.name}
+      tier_level: ${item.tier}
+      instance_count: ${item.replicas}
 ---
 deployment:
-  environment: "production"
+  environment: production
   services:
-    - service_name: "frontend"
-      tier_level: "web"
-      instance_count: "3"
-    - service_name: "backend"
-      tier_level: "api"
-      instance_count: "5"
+    - instance_count: 3
+      service_name: frontend
+      tier_level: web
+    - instance_count: 5
+      service_name: backend
+      tier_level: api
+services_data:
+  - autoscale: true
+    name: frontend
+    replicas: 3
+    tier: web
+  - autoscale: true
+    name: backend
+    replicas: 5
+    tier: api
+  - autoscale: false
+    name: monitor
+    replicas: 1
+    tier: ops
+  - autoscale: false
+    name: cache
+    replicas: 2
+    tier: data

@@ -1,23 +1,35 @@
+data:
+  - id: 1
+    category: "A"
+  - id: 2
+    category: "B"
+  - id: 3
+    category: "A"
+  - id: 4
+    category: "C"
+  - id: 5
+    category: "A"
 items:
-  - for:
-      - id: 1
-        category: "A"
-      - id: 2
-        category: "B"
-      - id: 3
-        category: "A"
-      - id: 4
-        category: "C"
-      - id: 5
-        category: "A"
+  - for: item in data
     if: item.category == 'A'
-    item_id: "${item.id}"
-    item_category: "${item.category}"
+    item_id: ${item.id}
+    item_category: ${item.category}
 ---
+data:
+  - category: A
+    id: 1
+  - category: B
+    id: 2
+  - category: A
+    id: 3
+  - category: C
+    id: 4
+  - category: A
+    id: 5
 items:
-  - item_id: "1"
-    item_category: "A"
-  - item_id: "3"
-    item_category: "A"
-  - item_id: "5"
-    item_category: "A"
+  - item_category: A
+    item_id: 1
+  - item_category: A
+    item_id: 3
+  - item_category: A
+    item_id: 5

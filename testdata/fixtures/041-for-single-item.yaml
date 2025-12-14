@@ -9,8 +9,11 @@ users:
 metadata:
   version: "1.0"
 ---
-users:
-  - name: "alice"
-    role: "admin"
 metadata:
   version: "1.0"
+users:
+  - name: alice
+    role: admin
+vars:
+  items:
+    - alice
