@@ -14,13 +14,13 @@ func TestExpr_ProcessWithStack(t *testing.T) {
 	st := stack.NewStack(map[string]any{"name": "John"})
 
 	// Test with primitive value
-	result, err := e.ProcessWithStack("hello", st)
+	result, err := e.ProcessWithStack(st, "hello")
 	require.NoError(t, err)
 	require.Equal(t, "hello", result)
 
 	// Test with map
 	doc := map[string]any{"key": "value"}
-	result, err = e.ProcessWithStack(doc, st)
+	result, err = e.ProcessWithStack(st, doc)
 	require.NoError(t, err)
 	m, ok := result.(map[string]any)
 	require.True(t, ok)
@@ -28,7 +28,7 @@ func TestExpr_ProcessWithStack(t *testing.T) {
 
 	// Test with slice
 	sliceDoc := []any{"a", "b", "c"}
-	result, err = e.ProcessWithStack(sliceDoc, st)
+	result, err = e.ProcessWithStack(st, sliceDoc)
 	require.NoError(t, err)
 	s, ok := result.([]any)
 	require.True(t, ok)

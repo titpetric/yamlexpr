@@ -16,15 +16,15 @@ type Syntax struct {
 	If string `json:"if" yaml:"if"`
 	// For is the directive keyword for iteration blocks (default: "for").
 	For string `json:"for" yaml:"for"`
-	// Embed is the directive keyword for file embedding/inclusion (default: "embed").
-	Embed string `json:"embed" yaml:"embed"`
+	// Include is the directive keyword for file inclusion/composition (default: "include").
+	Include string `json:"include" yaml:"include"`
 }
 
 // DefaultSyntax is the default syntax configuration with standard directive names.
 var DefaultSyntax = Syntax{
-	If:    "if",
-	For:   "for",
-	Embed: "embed",
+	If:      "if",
+	For:     "for",
+	Include: "include",
 }
 
 // Config holds configuration options for the Expr evaluator.
@@ -35,8 +35,6 @@ type Config struct {
 	handlers map[string]DirectiveHandler
 	// handlerOrder tracks the order handlers were registered (for deterministic evaluation)
 	handlerOrder []string
-	// registerStandard indicates if standard handlers should be registered
-	registerStandard bool
 	// filesystem is the FS used for loading resources (can be nil)
 	filesystem fs.FS
 }
@@ -58,9 +56,9 @@ type ConfigOption func(*Config)
 // Example:
 //
 //	e := yamlexpr.New(fs, yamlexpr.WithSyntax(yamlexpr.Syntax{
-//		If:    "v-if",
-//		For:   "v-for",
-//		Embed: "v-embed",
+//		If:      "v-if",
+//		For:     "v-for",
+//		Include: "v-include",
 //	}))
 //
 // Or partially customize (empty fields keep defaults):
@@ -68,7 +66,7 @@ type ConfigOption func(*Config)
 //	e := yamlexpr.New(fs, yamlexpr.WithSyntax(yamlexpr.Syntax{
 //		If:  "v-if",
 //		For: "v-for",
-//		// Embed remains "embed"
+//		// Include remains "include"
 //	}))
 func WithSyntax(syntax Syntax) ConfigOption {
 	return func(cfg *Config) {
@@ -79,8 +77,8 @@ func WithSyntax(syntax Syntax) ConfigOption {
 		if syntax.For != "" {
 			cfg.syntax.For = syntax.For
 		}
-		if syntax.Embed != "" {
-			cfg.syntax.Embed = syntax.Embed
+		if syntax.Include != "" {
+			cfg.syntax.Include = syntax.Include
 		}
 	}
 }
@@ -95,9 +93,9 @@ func (c *Config) ForDirective() string {
 	return c.syntax.For
 }
 
-// EmbedDirective returns the current embed directive keyword.
-func (c *Config) EmbedDirective() string {
-	return c.syntax.Embed
+// IncludeDirective returns the current include directive keyword.
+func (c *Config) IncludeDirective() string {
+	return c.syntax.Include
 }
 
 // WithDirectiveHandler registers a custom handler for a directive name.
@@ -110,7 +108,7 @@ func (c *Config) EmbedDirective() string {
 //		yamlexpr.WithDirectiveHandler("repeat", myRepeatHandler),
 //	)
 //
-// If a handler is registered for a built-in directive (if, for, embed),
+// If a handler is registered for a built-in directive (if, for, include),
 // it overrides the default implementation for that directive.
 func WithDirectiveHandler(directive string, handler DirectiveHandler) ConfigOption {
 	return func(cfg *Config) {
@@ -125,42 +123,14 @@ func WithDirectiveHandler(directive string, handler DirectiveHandler) ConfigOpti
 	}
 }
 
-// WithFS sets the filesystem for resource loading (embed directive).
+// WithFS sets the filesystem for resource loading (include directive).
 // If not set, only in-memory processing is available.
 //
 // Example:
 //
-//	e := yamlexpr.New(yamlexpr.WithFS(myFS), yamlexpr.WithStandardHandlers())
+//	e := yamlexpr.New(yamlexpr.WithFS(myFS))
 func WithFS(filesystem fs.FS) ConfigOption {
 	return func(cfg *Config) {
 		cfg.filesystem = filesystem
 	}
-}
-
-// WithStandardHandlers registers the standard handlers (for, if, embed).
-// This is a convenience option to enable the built-in directives.
-//
-// Example:
-//
-//	e := yamlexpr.New(yamlexpr.WithFS(fs), yamlexpr.WithStandardHandlers())
-//
-// This is equivalent to manually registering each handler:
-//
-//	e := yamlexpr.New(yamlexpr.WithFS(fs),
-//		yamlexpr.WithDirectiveHandler("for", handlers.ForHandlerBuiltin(e, "for")),
-//		yamlexpr.WithDirectiveHandler("if", handlers.IfHandlerBuiltin("if")),
-//		yamlexpr.WithDirectiveHandler("embed", handlers.EmbedHandlerBuiltin(e, "embed")),
-//	)
-func WithStandardHandlers() ConfigOption {
-	return func(cfg *Config) {
-		cfg.registerStandard = true
-	}
-}
-
-// GetHandler returns the handler for a directive, or nil if not registered.
-func (c *Config) GetHandler(directive string) DirectiveHandler {
-	if c.handlers == nil {
-		return nil
-	}
-	return c.handlers[directive]
 }
