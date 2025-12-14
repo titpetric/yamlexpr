@@ -1,4 +1,0 @@
-- All handlers/ should follow the same API, taking advantage of the Processor interface
-- Matrix handlers still need work, passing the integration tests
-
-Matrix should behave as for, so it's only possible to use 'for' in lists (slices).
