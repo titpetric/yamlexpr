@@ -6,23 +6,12 @@ This file contains conventions and preferences for AI agents working on this cod
 
 ### Package Organization
 
-- **stack/**: Variable scope stack management (shared with vuego/lessgo patterns)
-  - `stack.go`: Stack implementation for variable lookup and resolution
-  - `stack_test.go`: Black box tests for Stack API
-
-- **expr/**: YAML expression evaluation and composition
-  - `expr.go`: Main Expr type for evaluating YAML documents with stack values
-  - `expr_test.go`: Black box tests for Expr API
-  - `context.go`: ExprContext for carrying evaluation state through processing
-  - `context_test.go`: Tests for ExprContext API
-  - `processor.go`: Core document processing (for, if, include handlers)
-  - `processor_test.go`: Integration tests for document transformation
-  - `interpolate.go`: ${} syntax interpolation in string values
-  - `interpolate_test.go`: Interpolation tests
-
-- **testdata/fixtures/**: Test fixtures matching lessgo pattern
-  - `NNN-description.yaml`: Input YAML source
-  - `NNN-description.yaml.expected`: Expected output YAML after processing
+- **stack/**: Variable scope stack management (reusable, shared pattern with vuego/lessgo)
+- **model/**: Core interfaces and types (DirectiveHandler, Processor, Context)
+- **handlers/**: Modular directive handlers (if, for, embed, interpolation, discard)
+- **runner/**: Deterministic matrix expansion at document root level
+- **merge/**: YAML merging utilities supporting document composition
+- **testdata/fixtures/**: Black-box test fixtures (001-099: basic, 040-099: for/if, 100-199: integration, 200-299: matrix)
 
 ### Design Principles
 
@@ -242,6 +231,50 @@ Methods on ExprContext:
 - `PushStackScope(map)`: Push variable scope
 - `PopStackScope()`: Pop variable scope
 
+## Documentation Standards
+
+### Handler Documentation
+
+Each handler must have a corresponding markdown file in `docs/handlers/`:
+
+**File**: `docs/handlers/{handler_name}.md`
+
+**Structure**:
+1. **Overview** - What the handler does
+2. **Syntax** - How to use it in YAML
+3. **Features** - Key capabilities
+4. **Examples** - Real-world usage patterns
+5. **API Functions** - Public functions with signatures and descriptions
+6. **Error Handling** - Common error cases and messages
+7. **See Also** - Links to related handlers
+
+**Examples section must include**:
+- Basic usage
+- With variables/interpolation
+- Combined with other directives (for, if)
+- Error cases (when appropriate)
+
+**Key points to document**:
+- Single-line expression vs multi-line (e.g., for expressions are single-line)
+- Interaction with variable scope
+- Handler priority
+- Type requirements (e.g., matrix dimensions must be arrays)
+- Null/undefined handling behavior
+
+### Documentation Index
+
+Maintain indices in:
+- **`docs/README.md`** - Complete documentation index with handler links
+- **`README.md`** (main) - Quick reference links to handler docs and docs index
+- **Handler Priority Table** - Show execution order and impact
+
+### Keeping Documentation Accurate
+
+- **Fixtures are source of truth**: All behavior documented in `testdata/fixtures/*.yaml`
+- **Update docs when adding features**: Don't let code and docs diverge
+- **Link between related handlers**: Cross-reference handlers that work together
+- **Show output examples**: Include both input and output YAML for clarity
+
 ## Key Principles
 
 - **Fixtures are source of truth**: All behavior documented in testdata/fixtures/*.yaml
@@ -250,3 +283,4 @@ Methods on ExprContext:
 - **Expr is self-contained**: Handle composition, interpolation, conditionals here
 - **Black box testing**: Only test exported APIs, not implementation details
 - **Follow Go conventions**: Use standard library, avoid unnecessary dependencies
+- **Document comprehensively**: Handler docs are as important as code quality

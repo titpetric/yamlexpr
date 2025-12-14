@@ -6,8 +6,24 @@ YAML composition, interpolation, and conditional evaluation for Go.
 
 ## Documentation
 
+**Start here:** [Complete Documentation Index](docs/README.md)
+
+### Quick Links
+
 - **[Tutorial](docs/tutorial.md)** - Comprehensive guide with real-world examples
-- **[Syntax Reference](docs/syntax.md)** - Complete guide to `include`, `for`, and `if` directives
+- **[Syntax Reference](docs/syntax.md)** - Complete guide to all directives and syntax
+
+### Handler Documentation
+
+- **[Include (`include:`)](/docs/handlers/include.md)** - Load and merge external YAML files
+- **[For Loops (`for:`)](/docs/handlers/for.md)** - Iterate over collections with loop variables
+- **[Conditionals (`if:`)](/docs/handlers/if.md)** - Include/exclude blocks based on conditions
+- **[Discard (`discard:`)](/docs/handlers/discard.md)** - Omit blocks conditionally
+- **[Matrix (`matrix:`)](/docs/handlers/matrix.md)** - Generate combinations using cartesian product
+- **[Interpolation (`${}`)](/docs/handlers/interpolation.md)** - Substitute variables and expressions
+
+### Reference
+
 - **[Custom Syntax Configuration](docs/custom-syntax.md)** - Configure directive keywords (Vue, Angular, or custom style)
 - **[API Reference](docs/api.md)** - Complete API documentation
 - **[Design Document](docs/DESIGN.md)** - Architecture and design decisions
@@ -37,16 +53,19 @@ import (
 
 func main() {
 	// Create an Expr evaluator with the current directory as the filesystem
-	expr := yamlexpr.New(os.DirFS("."))
+	expr := yamlexpr.New(yamlexpr.WithFS(os.DirFS(".")))
 
 	// Load and evaluate a YAML file
-	result, err := expr.Load("config.yaml")
+	docs, err := expr.Load("config.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Result is map[string]any containing the processed YAML
-	fmt.Printf("%+v\n", result)
+	// docs is []any, containing one or more processed YAML documents
+	for _, doc := range docs {
+		config := doc.(map[string]any)
+		fmt.Printf("%+v\n", config)
+	}
 }
 ```
 
@@ -66,7 +85,7 @@ import (
 
 func main() {
 	// Create an Expr evaluator
-	expr := yamlexpr.New(os.DirFS("."))
+	expr := yamlexpr.New(yamlexpr.WithFS(os.DirFS(".")))
 
 	// Prepare your YAML data
 	data := map[string]any{
@@ -101,8 +120,8 @@ st := stack.New(map[string]any{
 	"region":  "us-west-2",
 })
 
-expr := yamlexpr.New(os.DirFS("."))
-result, err := expr.ProcessWithStack(data, st)
+expr := yamlexpr.New(yamlexpr.WithFS(os.DirFS(".")))
+result, err := expr.ProcessWithStack(st, data)
 if err != nil {
 	log.Fatal(err)
 }
@@ -112,14 +131,16 @@ if err != nil {
 
 ```go
 // Use Vue.js-style directives
-expr := yamlexpr.New(os.DirFS("."), yamlexpr.WithSyntax(yamlexpr.Syntax{
-	If:    "v-if",
-	For:   "v-for",
-	Embed: "v-embed",
-}))
+expr := yamlexpr.New(
+	yamlexpr.WithFS(os.DirFS(".")),
+	yamlexpr.WithSyntax(yamlexpr.Syntax{
+		If:  "v-if",
+		For: "v-for",
+	}),
+)
 
-// Now your YAML can use v-if, v-for, and v-embed
-result, err := expr.Load("config.yaml")
+// Now your YAML can use v-if and v-for directives
+docs, err := expr.Load("config.yaml")
 ```
 
 See [Custom Syntax Configuration](docs/custom-syntax.md) for more examples.
@@ -129,17 +150,23 @@ See [Custom Syntax Configuration](docs/custom-syntax.md) for more examples.
 - [X] **Variable Interpolation**: Use `${variable.path}` syntax in string values
 - [X] **Conditionals**: Include/exclude blocks with `if:` directive
 - [X] **For Loops**: Iterate and expand templates with `for:` directive
-- [X] **Composition**: Embed external YAML files with `embed:` directive
+- [X] **Composition**: Load and merge external YAML files with `include:` directive
 
 ## API
 
-### Expr.Load(filename string) (map[string]any, error)
+### Expr.Load(filename string) ([]any, error)
 
-Loads a YAML file and evaluates all expressions in it. Files are resolved relative to the filesystem provided to `New()`.
+Loads a YAML file and evaluates all expressions in it. Returns a slice of documents.
+- For root-level `for:` or `matrix:` directives, returns one document per iteration/combination.
+- For regular documents, returns a single-item slice. Files are resolved relative to the filesystem provided to `New()`.
 
 ```go
-expr := yamlexpr.New(os.DirFS("."))
-config, err := expr.Load("config.yaml")
+expr := yamlexpr.New(yamlexpr.WithFS(os.DirFS(".")))
+docs, err := expr.Load("config.yaml")
+for _, doc := range docs {
+	config := doc.(map[string]any)
+	// Use config...
+}
 ```
 
 ### Expr.Process(doc any) (any, error)
@@ -166,13 +193,13 @@ environment: production
 port: 8080
 
 services:
-   - for: "service in available_services"
-     if: "${service.enabled}"
-     name: "${service.name}"
-     replicas: "${service.replicas}"
- 
- database:
-   embed: "database.yaml"
+    - for: "service in available_services"
+      if: "${service.enabled}"
+      name: "${service.name}"
+      replicas: "${service.replicas}"
+  
+  database:
+    include: "database.yaml"
 ```
 
 ```yaml
