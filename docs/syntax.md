@@ -2,9 +2,11 @@
 
 yamlexpr provides several directives and features for YAML composition, conditional evaluation, and variable interpolation.
 
-## Variable Interpolation with `${variable}`
+## Variable Interpolation with `${...}`
 
-Any string value can include variable substitution using `${variable}` syntax:
+Any string value can include variable substitution and expression evaluation using `${...}` syntax:
+
+### Simple Variable References
 
 ```yaml
 message: "Hello, ${name}!"
@@ -12,7 +14,42 @@ path: "/users/${user_id}/profile"
 config_file: ${config_path}
 ```
 
-Variables are resolved from the stack (root-level keys or passed variables). Undefined variables in lenient mode are left unchanged; in strict mode they produce an error.
+### Expression Evaluation
+
+The `${}` syntax supports full expr-lang expressions, enabling arithmetic, string functions, and comparisons:
+
+**Arithmetic operations:**
+
+```yaml
+price: 100
+items:
+  - for: [1, 2, 3]
+    quantity: ${item}
+    total: ${item * price}
+    discounted: ${item * price * 0.9}
+```
+
+**String functions:**
+
+```yaml
+items:
+  - for: ["hello", "world"]
+    word: ${item}
+    uppercase: ${upper(item)}
+    length: ${len(item)}
+```
+
+**Comparisons:**
+
+```yaml
+items:
+  - for: [1, 5, 10, 15]
+    num: ${item}
+    is_large: ${item > 10}
+    is_even: ${item % 2 == 0}
+```
+
+Variables are resolved from the stack (root-level keys or passed variables). Undefined variables produce an error.
 
 **Note:** The `${}` syntax was chosen to enable proper YAML parsing. Without the `$` sign, `{variable}` causes parsing issues where the parser expects an object.
 
@@ -63,6 +100,7 @@ The `for` directive expands an array by iterating over values and creating multi
 
 - `for: item in items` - Iterate over items with single variable
 - `for: (idx, item) in items` - Iterate with both index and item
+- `for: [value1, value2, ...]` - Direct array (uses default `item` variable)
 
 **Single variable:**
 
@@ -72,6 +110,17 @@ steps:
     name: "${step.name}"
     run: "${step.command}"
 ```
+
+**Direct array syntax:**
+
+```yaml
+users:
+  - for: ["alice", "bob", "charlie"]
+    name: "${item}"
+    active: true
+```
+
+When using direct array syntax, the loop variable is automatically named `item`.
 
 **With index and value:**
 
