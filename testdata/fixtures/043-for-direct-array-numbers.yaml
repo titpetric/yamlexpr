@@ -1,0 +1,16 @@
+items:
+  - for: [1, 2, 3, 4, 5]
+    value: ${item}
+    squared: ${item * item}
+---
+items:
+  - squared: 1
+    value: 1
+  - squared: 4
+    value: 2
+  - squared: 9
+    value: 3
+  - squared: 16
+    value: 4
+  - squared: 25
+    value: 5

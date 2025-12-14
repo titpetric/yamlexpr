@@ -1,0 +1,24 @@
+values:
+  initial: 10
+calculations:
+  - for: [2, 3, 5]
+    factor: ${item}
+    doubled: ${item * 2}
+    incremented: ${item + 1}
+    subtracted: ${10 - item}
+---
+calculations:
+  - doubled: 4
+    factor: 2
+    incremented: 3
+    subtracted: 8
+  - doubled: 6
+    factor: 3
+    incremented: 4
+    subtracted: 7
+  - doubled: 10
+    factor: 5
+    incremented: 6
+    subtracted: 5
+values:
+  initial: 10
