@@ -81,6 +81,11 @@ func (s *Stack) Copy() *Stack {
 	return NewStackWithData(s.All(), s.rootData)
 }
 
+// Count returns the count of stack frames.
+func (s *Stack) Count() int {
+	return len(s.stack)
+}
+
 // Push a new map as a top-most Stack.
 // If m is nil, an empty map is obtained from the pool.
 func (s *Stack) Push(m map[string]any) {

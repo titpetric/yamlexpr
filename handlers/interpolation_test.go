@@ -130,12 +130,6 @@ func TestInterpolateValue(t *testing.T) {
 	}
 }
 
-// TestNewInterpolationHandler tests that NewInterpolationHandler returns a valid handler.
-func TestNewInterpolationHandler(t *testing.T) {
-	handler := handlers.NewInterpolationHandler()
-	require.NotNil(t, handler)
-}
-
 // TestInterpolateValueWithContext tests InterpolateValueWithContext.
 func TestInterpolateValueWithContext(t *testing.T) {
 	st := stack.NewStack(map[string]any{
@@ -219,13 +213,4 @@ func TestInterpolateValuePermissive(t *testing.T) {
 			require.Equal(t, tt.expected, result)
 		})
 	}
-}
-
-// TestInterpolationHandlerBuiltin tests the builtin interpolation handler.
-func TestInterpolationHandlerBuiltin(t *testing.T) {
-	handler := handlers.InterpolationHandlerBuiltin("interpolate")
-
-	// Since the handler is a closure that doesn't really do anything,
-	// just verify it exists and can be called
-	require.NotNil(t, handler)
 }

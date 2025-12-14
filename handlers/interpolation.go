@@ -7,7 +7,6 @@ import (
 
 	"github.com/expr-lang/expr"
 
-	"github.com/titpetric/yamlexpr/model"
 	"github.com/titpetric/yamlexpr/stack"
 )
 
@@ -252,32 +251,5 @@ func InterpolateValuePermissive(value any, st *stack.Stack) (any, error) {
 	default:
 		// Return non-string values unchanged
 		return value, nil
-	}
-}
-
-// NewInterpolationHandler creates a handler for string interpolation.
-// This handler processes ${variable} syntax in string values and replaces them
-// with their resolved values from the stack.
-//
-// Note: Interpolation is automatically applied to all string values during
-// document processing, but this handler allows explicit control over when
-// interpolation occurs or can be used as a standalone directive.
-//
-// Priority: 50 (runs after include/for/if, before custom handlers)
-func NewInterpolationHandler() *InterpolationHandlerImpl {
-	return &InterpolationHandlerImpl{}
-}
-
-// InterpolationHandlerImpl implements the interpolation handler
-type InterpolationHandlerImpl struct{}
-
-// InterpolationHandlerBuiltin creates a handler for explicit interpolation control.
-// This allows interpolation to be triggered as a directive in YAML.
-func InterpolationHandlerBuiltin(interpolateDirective string) DirectiveHandler {
-	return func(ctx *model.Context, block map[string]any, value any) ([]any, bool, error) {
-		// Interpolation handler doesn't consume directives when used as a directive.
-		// It's typically applied automatically during value processing.
-		// If used explicitly as a directive, it returns nil to continue normal processing.
-		return nil, false, nil
 	}
 }

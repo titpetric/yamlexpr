@@ -122,3 +122,8 @@ func (ctx *Context) Push(m map[string]any) {
 func (ctx *Context) Pop() {
 	ctx.stack.Pop()
 }
+
+// Count returns the number of stack frames.
+func (ctx *Context) Count() int {
+	return ctx.stack.Count()
+}

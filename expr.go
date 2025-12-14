@@ -1,6 +1,7 @@
 package yamlexpr
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 
@@ -134,16 +135,15 @@ func (e *Expr) processWithContext(ctx *model.Context, doc any) ([]any, error) {
 		return e.processMapWithContext(ctx, d)
 	case []any:
 		return e.processSliceWithContext(ctx, d)
-		//	case string:
-		// Interpolate string values with error context
-		// For single expressions like ${item * 2}, return the native type
-		//		result, err := handlers.InterpolateValueWithContext(d, ctx.Stack(), ctx.Path())
-		//		return result, err
-		//	default:
-		// Return primitives as-is
-		//		return d, nil
 	}
-	return []any{doc}, nil
+	return nil, fmt.Errorf("unknown type to process: %T", doc)
+}
+
+func (e *Expr) interpolate(ctx *model.Context, doc string) (any, error) {
+	// Interpolate string values with error context
+	// For single expressions like ${item * 2}, return the native type
+	result, err := handlers.InterpolateValueWithContext(doc, ctx.Stack(), ctx.Path())
+	return result, err
 }
 
 // processMapWithContext processes a map with ExprContext, handling include, for, if, and custom directives.
@@ -190,10 +190,22 @@ func (e *Expr) processMapWithContext(ctx *model.Context, m map[string]any) ([]an
 		}
 
 		childCtx := ctx.AppendPath(k)
+
+		// Handle string interpolation
+		if attr, ok := v.(string); ok {
+			processed, err := e.interpolate(childCtx, attr)
+			if err != nil {
+				return nil, err
+			}
+			result[k] = processed
+			continue
+		}
+
 		processed, err := e.processWithContext(childCtx, v)
 		if err != nil {
 			return nil, err
 		}
+
 		// Only include non-nil results (if: false returns nil)
 		if processed != nil {
 			result[k] = processed
@@ -212,6 +224,16 @@ func (e *Expr) processSliceWithContext(ctx *model.Context, s []any) ([]any, erro
 	for i, item := range s {
 		itemCtx := ctx.AppendPath(fmt.Sprintf("[%d]", i))
 
+		// Handle string interpolation
+		if attr, ok := item.(string); ok {
+			processed, err := e.interpolate(itemCtx, attr)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, processed)
+			continue
+		}
+
 		processed, err := e.processWithContext(itemCtx, item)
 		if err != nil {
 			return nil, err
@@ -225,20 +247,6 @@ func (e *Expr) processSliceWithContext(ctx *model.Context, s []any) ([]any, erro
 	return result, nil
 }
 
-// isMapWithHandler checks if an item is a map that contains a registered handler directive
-func isMapWithHandler(item any, handlerOrder []string, handlers map[string]DirectiveHandler) bool {
-	mapItem, ok := item.(map[string]any)
-	if !ok {
-		return false
-	}
-	for _, directive := range handlerOrder {
-		if _, exists := mapItem[directive]; exists {
-			return true
-		}
-	}
-	return false
-}
-
 // loadAndMergeFileWithContext loads a YAML file and merges it into the result with ExprContext.
 func (e *Expr) loadAndMergeFileWithContext(ctx *model.Context, filename string, result map[string]any) error {
 	data, err := fs.ReadFile(e.fs, filename)
@@ -250,6 +258,10 @@ func (e *Expr) loadAndMergeFileWithContext(ctx *model.Context, filename string, 
 	included, err := parseYAML(data)
 	if err != nil {
 		return fmt.Errorf("error parsing YAML file %s: %w", filename, err)
+	}
+
+	if !stack.CanDescend(included) {
+		return fmt.Errorf("error parsing YAML file %s: %w", filename, errors.New("contents of file can't be descended"))
 	}
 
 	// Create new context for included file
