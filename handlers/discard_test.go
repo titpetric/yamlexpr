@@ -6,12 +6,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/titpetric/yamlexpr/handlers"
+	"github.com/titpetric/yamlexpr/model"
 )
 
 func TestDiscardHandler_True(t *testing.T) {
-	fn := handlers.NewDiscardHandler()
-	handler := fn.(func(any, map[string]any, any) (any, bool, error))
-	result, consumed, err := handler(nil, map[string]any{}, true)
+	handler := handlers.DiscardHandlerBuiltin()
+	ctx := model.NewContext(nil)
+	result, consumed, err := handler(ctx, map[string]any{}, true)
 
 	require.NoError(t, err)
 	require.Nil(t, result)
@@ -19,9 +20,9 @@ func TestDiscardHandler_True(t *testing.T) {
 }
 
 func TestDiscardHandler_False(t *testing.T) {
-	fn := handlers.NewDiscardHandler()
-	handler := fn.(func(any, map[string]any, any) (any, bool, error))
-	result, consumed, err := handler(nil, map[string]any{}, false)
+	handler := handlers.DiscardHandlerBuiltin()
+	ctx := model.NewContext(nil)
+	result, consumed, err := handler(ctx, map[string]any{}, false)
 
 	require.NoError(t, err)
 	require.Nil(t, result)
@@ -29,9 +30,9 @@ func TestDiscardHandler_False(t *testing.T) {
 }
 
 func TestDiscardHandler_StringTrue(t *testing.T) {
-	fn := handlers.NewDiscardHandler()
-	handler := fn.(func(any, map[string]any, any) (any, bool, error))
-	result, consumed, err := handler(nil, map[string]any{}, "true")
+	handler := handlers.DiscardHandlerBuiltin()
+	ctx := model.NewContext(nil)
+	result, consumed, err := handler(ctx, map[string]any{}, "true")
 
 	require.NoError(t, err)
 	require.Nil(t, result)
@@ -39,9 +40,9 @@ func TestDiscardHandler_StringTrue(t *testing.T) {
 }
 
 func TestDiscardHandler_StringFalse(t *testing.T) {
-	fn := handlers.NewDiscardHandler()
-	handler := fn.(func(any, map[string]any, any) (any, bool, error))
-	result, consumed, err := handler(nil, map[string]any{}, "false")
+	handler := handlers.DiscardHandlerBuiltin()
+	ctx := model.NewContext(nil)
+	result, consumed, err := handler(ctx, map[string]any{}, "false")
 
 	require.NoError(t, err)
 	require.Nil(t, result)
@@ -49,27 +50,27 @@ func TestDiscardHandler_StringFalse(t *testing.T) {
 }
 
 func TestDiscardHandler_InvalidString(t *testing.T) {
-	fn := handlers.NewDiscardHandler()
-	handler := fn.(func(any, map[string]any, any) (any, bool, error))
-	_, _, err := handler(nil, map[string]any{}, "maybe")
+	handler := handlers.DiscardHandlerBuiltin()
+	ctx := model.NewContext(nil)
+	_, _, err := handler(ctx, map[string]any{}, "maybe")
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "must be boolean")
 }
 
 func TestDiscardHandler_InvalidType(t *testing.T) {
-	fn := handlers.NewDiscardHandler()
-	handler := fn.(func(any, map[string]any, any) (any, bool, error))
-	_, _, err := handler(nil, map[string]any{}, []string{"foo"})
+	handler := handlers.DiscardHandlerBuiltin()
+	ctx := model.NewContext(nil)
+	_, _, err := handler(ctx, map[string]any{}, []string{"foo"})
 
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "must be boolean")
 }
 
 func TestDiscardHandler_Nil(t *testing.T) {
-	fn := handlers.NewDiscardHandler()
-	handler := fn.(func(any, map[string]any, any) (any, bool, error))
-	result, consumed, err := handler(nil, map[string]any{}, nil)
+	handler := handlers.DiscardHandlerBuiltin()
+	ctx := model.NewContext(nil)
+	result, consumed, err := handler(ctx, map[string]any{}, nil)
 
 	require.NoError(t, err)
 	require.Nil(t, result)
@@ -89,9 +90,9 @@ func TestDiscardHandler_Integer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fn := handlers.NewDiscardHandler()
-			handler := fn.(func(any, map[string]any, any) (any, bool, error))
-			result, consumed, err := handler(nil, map[string]any{}, tt.value)
+			handler := handlers.DiscardHandlerBuiltin()
+			ctx := model.NewContext(nil)
+			result, consumed, err := handler(ctx, map[string]any{}, tt.value)
 
 			require.NoError(t, err)
 			require.Nil(t, result)

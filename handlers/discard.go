@@ -2,38 +2,14 @@ package handlers
 
 import (
 	"fmt"
+
+	"github.com/titpetric/yamlexpr/model"
 )
 
 // NewDiscardHandler returns a directive handler for the "discard" directive.
 // The discard directive omits a block if set to true, similar to if: false.
-//
-// Signature matches yamlexpr.DirectiveHandler:
-//
-//	func(ctx *ExprContext, block map[string]any, value any) (result any, consumed bool, err error)
-//
-// Usage in YAML:
-//
-//	steps:
-//	  - name: "build"
-//	    run: "npm run build"
-//	  - name: "test"
-//	    run: "npm test"
-//	    discard: false
-//	  - name: "publish"
-//	    run: "npm publish"
-//	    discard: true
-//
-// The "publish" step will be omitted in the output.
-//
-// Priority: 10 (runs after if/for but before matrix)
-//
-// Example usage:
-//
-//	e := yamlexpr.New(fs,
-//	    yamlexpr.WithDirectiveHandler("discard", handlers.NewDiscardHandler(), 10),
-//	)
-func NewDiscardHandler() any {
-	return func(ctx any, block map[string]any, value any) (any, bool, error) {
+func DiscardHandlerBuiltin() DirectiveHandler {
+	return func(ctx *model.Context, block map[string]any, value any) (any, bool, error) {
 		// Handle various input types
 		switch v := value.(type) {
 		case bool:
@@ -69,4 +45,10 @@ func NewDiscardHandler() any {
 			return nil, false, fmt.Errorf("discard must be boolean, got %T", value)
 		}
 	}
+}
+
+// NewDiscardHandler is deprecated - use DiscardHandlerBuiltin instead.
+// This function is kept for backwards compatibility.
+func NewDiscardHandler() any {
+	return DiscardHandlerBuiltin()
 }

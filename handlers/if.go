@@ -206,9 +206,9 @@ func IsTruthy(v any) bool {
 	}
 }
 
-// IfHandlerBuiltin creates a handler for the "if" directive.
+// IfHandler creates a handler for the "if" directive.
 // Implements conditional block inclusion.
-func IfHandlerBuiltin(ifDirective string) DirectiveHandler {
+func IfHandler(ifDirective string) DirectiveHandler {
 	return func(ctx *model.Context, block map[string]any, value any) (any, bool, error) {
 		ok, err := EvaluateConditionWithPath(value, ctx.Stack(), ctx.Path()+"."+ifDirective)
 		if err != nil {

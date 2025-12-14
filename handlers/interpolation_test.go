@@ -135,3 +135,97 @@ func TestNewInterpolationHandler(t *testing.T) {
 	handler := handlers.NewInterpolationHandler()
 	require.NotNil(t, handler)
 }
+
+// TestInterpolateValueWithContext tests InterpolateValueWithContext.
+func TestInterpolateValueWithContext(t *testing.T) {
+	st := stack.NewStack(map[string]any{
+		"name":  "Bob",
+		"count": 100,
+	})
+
+	tests := []struct {
+		name      string
+		input     string
+		expected  any
+		expectErr bool
+	}{
+		{"plain string", "hello", "hello", false},
+		{"single var interpolation", "${name}", "Bob", false},
+		{"single number interpolation", "${count}", 100, false},
+		{"multiple interpolations", "${name} has ${count}", "Bob has 100", false},
+		{"undefined var", "${undefined}", nil, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := handlers.InterpolateValueWithContext(tt.input, st, "")
+			if tt.expectErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expected, result)
+			}
+		})
+	}
+}
+
+// TestInterpolateStringPermissive tests permissive interpolation (returns nil on undefined).
+func TestInterpolateStringPermissive(t *testing.T) {
+	st := stack.NewStack(map[string]any{
+		"name": "Charlie",
+	})
+
+	tests := []struct {
+		name     string
+		input    string
+		expected any
+	}{
+		{"plain string", "hello", "hello"},
+		{"single var", "hello ${name}", "hello Charlie"},
+		{"undefined var returns nil", "hello ${undefined}", nil},
+		{"one undefined var in multiple returns nil", "${name} ${undefined}", nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := handlers.InterpolateStringPermissive(tt.input, st)
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+// TestInterpolateValuePermissive tests permissive interpolation for values.
+func TestInterpolateValuePermissive(t *testing.T) {
+	st := stack.NewStack(map[string]any{
+		"name": "Diana",
+	})
+
+	tests := []struct {
+		name     string
+		input    any
+		expected any
+	}{
+		{"non-string unchanged", 42, 42},
+		{"string without interpolation", "hello", "hello"},
+		{"string with defined var", "hello ${name}", "hello Diana"},
+		{"string with undefined var returns nil", "hello ${undefined}", nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := handlers.InterpolateValuePermissive(tt.input, st)
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+// TestInterpolationHandlerBuiltin tests the builtin interpolation handler.
+func TestInterpolationHandlerBuiltin(t *testing.T) {
+	handler := handlers.InterpolationHandlerBuiltin("interpolate")
+
+	// Since the handler is a closure that doesn't really do anything,
+	// just verify it exists and can be called
+	require.NotNil(t, handler)
+}

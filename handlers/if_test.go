@@ -164,3 +164,8 @@ func TestIsQuoted(t *testing.T) {
 		})
 	}
 }
+
+func TestIfHandler(t *testing.T) {
+	handler := handlers.IfHandler("if")
+	require.NotNil(t, handler)
+}

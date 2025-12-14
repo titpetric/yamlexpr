@@ -6,26 +6,12 @@ import (
 	"github.com/titpetric/yamlexpr/model"
 )
 
-// NewForHandler returns a handler for the "for" directive (backwards compat).
+// NewForHandler returns a handler for the "for" directive.
 // Implements loop expansion with support for:
 // - Simple iteration: "item in items"
 // - Index and item: "(idx, item) in items"
 // - Nested paths: "item in item.subitems"
-// - Omitted variables: "(_, item) in items"
-//
-// Usage in YAML:
-//
-//	steps:
-//	  - for: "step in steps"
-//	    name: "${step.name}"
-//	    run: "${step.command}"
-//
-// Or with index:
-//
-//	items:
-//	  - for: "(idx, item) in items"
-//	    position: "${idx}"
-//	    value: "${item}"
+// - Omitted variables: "(_, item) in items" or "(idx, _) in items"
 //
 // The for directive expands a template for each item in the collection,
 // making loop variables available for interpolation.
@@ -177,9 +163,9 @@ func BuildScope(varNames []string, idx int, item any) map[string]any {
 	return scope
 }
 
-// ForHandlerBuiltin creates a handler for the "for" directive.
+// ForHandler creates a handler for the "for" directive.
 // Requires a Processor to recursively expand templates.
-func ForHandlerBuiltin(proc Processor, forDirective string) DirectiveHandler {
+func ForHandler(proc Processor, forDirective string) DirectiveHandler {
 	return func(ctx *model.Context, block map[string]any, value any) (any, bool, error) {
 		// Get the collection to iterate over and parse the for expression
 		var items []any
@@ -298,6 +284,104 @@ func ForHandlerBuiltin(proc Processor, forDirective string) DirectiveHandler {
 
 		return result, true, nil
 	}
+}
+
+// ExpandForAtRoot expands a root-level for directive into multiple document configurations.
+// Returns a slice of processed maps, one for each item in the iteration.
+// This is used by Expr.LoadMulti to handle root-level for loop expansion.
+func ExpandForAtRoot(ctx *model.Context, template map[string]any, processor Processor, forDirective string) ([]any, error) {
+	forValue, ok := template[forDirective]
+	if !ok {
+		return nil, fmt.Errorf("for key not found")
+	}
+
+	// Parse the for expression
+	loopVars, err := ParseForExpr(forValue.(string))
+	if err != nil {
+		return nil, fmt.Errorf("error parsing for expression: %w", err)
+	}
+
+	// Resolve the source variable from the stack
+	sourceVal, ok := ctx.Stack().Resolve(loopVars.Source)
+	if !ok {
+		return nil, fmt.Errorf("undefined variable '%s'", loopVars.Source)
+	}
+
+	// Convert source to slice
+	items, ok := sourceVal.([]any)
+	if !ok {
+		return nil, fmt.Errorf("for: variable '%s' must be an array, got %T", loopVars.Source, sourceVal)
+	}
+
+	// Collect all keys from template for null-filling (except for directive)
+	allKeys := make(map[string]bool)
+	for k := range template {
+		if k != forDirective {
+			allKeys[k] = true
+		}
+	}
+
+	// Process each item
+	result := make([]any, 0, len(items))
+	for idx, item := range items {
+		// Build scope with loop variables
+		scope := make(map[string]any)
+		for i, varName := range loopVars.Variables {
+			if varName == "_" {
+				continue
+			}
+
+			switch i {
+			case 0:
+				// First variable is usually the item (or index if 2 variables)
+				if len(loopVars.Variables) == 2 {
+					scope[varName] = idx
+				} else {
+					scope[varName] = item
+				}
+			case 1:
+				// Second variable is the item
+				scope[varName] = item
+			default:
+				// Additional variables (for potential future use)
+				scope[varName] = item
+			}
+		}
+
+		// Ensure all keys are present (fill missing with null)
+		for k := range allKeys {
+			if _, exists := scope[k]; !exists {
+				scope[k] = nil
+			}
+		}
+
+		// Create template copy without for directive
+		itemTemplate := make(map[string]any)
+		for k, v := range template {
+			if k != forDirective {
+				itemTemplate[k] = v
+			}
+		}
+
+		// Create context with item variables and process template
+		st := ctx.Stack()
+		st.Push(scope)
+
+		itemCtx := ctx.WithPath(ctx.Path())
+
+		processed, err := processor.ProcessMapWithContext(itemCtx, itemTemplate)
+		st.Pop()
+
+		if err != nil {
+			return nil, err
+		}
+
+		if processed != nil {
+			result = append(result, processed)
+		}
+	}
+
+	return result, nil
 }
 
 // Note: The old for loop handling was done in expr.go's handleForWithContext

@@ -82,3 +82,90 @@ func TestNewForHandler(t *testing.T) {
 	require.NotNil(t, handler)
 	require.IsType(t, &handlers.ForHandlerImpl{}, handler)
 }
+
+// TestParseForExpr tests the ParseForExpr function.
+func TestParseForExpr(t *testing.T) {
+	tests := []struct {
+		name       string
+		expr       string
+		wantVars   []string
+		wantSource string
+		wantErr    bool
+	}{
+		{
+			name:       "single variable",
+			expr:       "item in items",
+			wantVars:   []string{"item"},
+			wantSource: "items",
+			wantErr:    false,
+		},
+		{
+			name:       "two variables",
+			expr:       "(idx, item) in items",
+			wantVars:   []string{"idx", "item"},
+			wantSource: "items",
+			wantErr:    false,
+		},
+		{
+			name:       "nested source path",
+			expr:       "item in parent.children",
+			wantVars:   []string{"item"},
+			wantSource: "parent.children",
+			wantErr:    false,
+		},
+		{
+			name:       "omit index",
+			expr:       "(_, item) in items",
+			wantVars:   []string{"_", "item"},
+			wantSource: "items",
+			wantErr:    false,
+		},
+		{
+			name:       "omit item",
+			expr:       "(idx, _) in items",
+			wantVars:   []string{"idx", "_"},
+			wantSource: "items",
+			wantErr:    false,
+		},
+		{
+			name:    "no 'in' keyword",
+			expr:    "item items",
+			wantErr: true,
+		},
+		{
+			name:    "missing closing paren",
+			expr:    "(idx, item in items",
+			wantErr: true,
+		},
+		{
+			name:    "trailing comma",
+			expr:    "(idx, item,) in items",
+			wantErr: true,
+		},
+		{
+			name:    "empty variable name",
+			expr:    "(idx,, item) in items",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := handlers.ParseForExpr(tt.expr)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, result)
+				require.Equal(t, tt.wantVars, result.Variables)
+				require.Equal(t, tt.wantSource, result.Source)
+			}
+		})
+	}
+}
+
+// TestForHandler tests the for handler builtin.
+func TestForHandler(t *testing.T) {
+	handler := handlers.ForHandler(nil, "for")
+	require.NotNil(t, handler)
+}

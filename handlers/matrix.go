@@ -280,3 +280,82 @@ func valuesEqual(a, b any) bool {
 		return fmt.Sprintf("%v", a) == fmt.Sprintf("%v", b)
 	}
 }
+
+// ExpandMatrixAtRoot expands a root-level matrix directive into multiple job configurations.
+// Returns a slice of processed maps, one for each matrix combination.
+// This is used by Expr.Process to handle root-level matrix expansion.
+func ExpandMatrixAtRoot(ctx *model.Context, template map[string]any, processor Processor) ([]any, error) {
+	matrixValue, ok := template["matrix"]
+	if !ok {
+		return nil, fmt.Errorf("matrix key not found")
+	}
+
+	matrixMap, ok := matrixValue.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("matrix must be a map, got %T", matrixValue)
+	}
+
+	// Parse matrix directive
+	matrixDir, err := parseMatrixDirective(matrixMap)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing matrix: %w", err)
+	}
+
+	// Expand base matrix (cartesian product)
+	jobs := expandMatrixBase(matrixDir)
+
+	// Apply exclude rules
+	jobs = applyExcludes(jobs, matrixDir.Exclude)
+
+	// Apply include rules
+	jobs, err = applyEmbeds(jobs, matrixDir.Include)
+	if err != nil {
+		return nil, fmt.Errorf("error applying include rules: %w", err)
+	}
+
+	// Collect all dimension keys for null-filling
+	allKeys := make(map[string]bool)
+	for _, job := range jobs {
+		for k := range job {
+			allKeys[k] = true
+		}
+	}
+
+	// Process each job with matrix variables in scope
+	result := make([]any, 0, len(jobs))
+	for _, jobVars := range jobs {
+		// Ensure all dimension keys are present (fill missing with null)
+		for k := range allKeys {
+			if _, exists := jobVars[k]; !exists {
+				jobVars[k] = nil
+			}
+		}
+
+		// Create template copy without matrix directive
+		jobTemplate := make(map[string]any)
+		for k, v := range template {
+			if k != "matrix" {
+				jobTemplate[k] = v
+			}
+		}
+
+		// Create context with job variables and process template
+		st := ctx.Stack()
+		st.Push(jobVars)
+
+		jobCtx := ctx.WithPath(ctx.Path())
+
+		processed, err := processor.ProcessMapWithContext(jobCtx, jobTemplate)
+		st.Pop()
+
+		if err != nil {
+			return nil, err
+		}
+
+		if processed != nil {
+			result = append(result, processed)
+		}
+	}
+
+	return result, nil
+}
