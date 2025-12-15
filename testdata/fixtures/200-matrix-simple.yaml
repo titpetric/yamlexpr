@@ -1,0 +1,20 @@
+- matrix:
+    os: [linux, windows]
+    version: [12, 14]
+    run: steps
+  name: "Test ${os} v${version}"
+  os: ${os}
+  version: ${version}
+---
+- name: "Test linux v12"
+  os: linux
+  version: 12
+- name: "Test linux v14"
+  os: linux
+  version: 14
+- name: "Test windows v12"
+  os: windows
+  version: 12
+- name: "Test windows v14"
+  os: windows
+  version: 14

@@ -8,6 +8,7 @@ import (
 	"github.com/expr-lang/expr"
 	yaml "gopkg.in/yaml.v3"
 
+	"github.com/titpetric/yamlexpr/handlers"
 	"github.com/titpetric/yamlexpr/stack"
 )
 
@@ -96,7 +97,7 @@ func (e *Expr) processWithContext(ctx *Context, doc any) (any, error) {
 		return e.processSliceWithContext(ctx, d)
 	case string:
 		// Interpolate string values with error context
-		return interpolateStringWithContext(d, ctx.Stack(), ctx.Path())
+		return handlers.InterpolateStringWithContext(ctx.Stack(), d, ctx.Path())
 	default:
 		// Return primitives as-is
 		return d, nil

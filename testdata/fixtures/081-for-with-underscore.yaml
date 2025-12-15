@@ -1,7 +1,7 @@
 names: ["alice", "bob", "charlie"]
 output:
-  - for: (_, name) in names
-    person: "${name}"
+   - for: (_, name) in names
+     person: ${name}
 ---
 names: ["alice", "bob", "charlie"]
 output:
