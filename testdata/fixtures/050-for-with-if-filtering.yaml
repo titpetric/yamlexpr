@@ -1,13 +1,13 @@
 enabled_services:
-  - for:
-      - name: "api"
-        active: true
-      - name: "worker"
-        active: false
-      - name: "scheduler"
-        active: true
-    if: item.active
-    service: "${item.name}"
+   - for:
+       - name: "api"
+         active: true
+       - name: "worker"
+         active: false
+       - name: "scheduler"
+         active: true
+     if: item.active
+     service: ${item.name}
 ---
 enabled_services:
   - service: "api"

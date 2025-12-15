@@ -1,0 +1,28 @@
+items:
+  - for: [1, 5, 10, 15, 20]
+    value: ${item}
+    is_small: ${item < 10}
+    is_large: ${item >= 10}
+    is_equal_five: ${item == 5}
+---
+items:
+  - is_equal_five: false
+    is_large: false
+    is_small: true
+    value: 1
+  - is_equal_five: true
+    is_large: false
+    is_small: true
+    value: 5
+  - is_equal_five: false
+    is_large: true
+    is_small: false
+    value: 10
+  - is_equal_five: false
+    is_large: true
+    is_small: false
+    value: 15
+  - is_equal_five: false
+    is_large: true
+    is_small: false
+    value: 20

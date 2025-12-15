@@ -10,7 +10,7 @@ import (
 
 // TestInterpolateString tests the internal interpolateStringHelper function.
 func TestInterpolateString(t *testing.T) {
-	st := stack.New(map[string]any{
+	st := stack.NewStack(map[string]any{
 		"name": "John",
 		"age":  30,
 		"user": map[string]any{

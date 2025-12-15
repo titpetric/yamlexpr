@@ -1,12 +1,12 @@
 results:
-  - for:
-      - name: "test1"
-        skip: true
-      - name: "test2"
-        skip: true
-      - name: "test3"
-        skip: true
-    if: item.skip == false
-    test: "${item.name}"
+   - for:
+       - name: "test1"
+         skip: true
+       - name: "test2"
+         skip: true
+       - name: "test3"
+         skip: true
+     if: item.skip == false
+     test: ${item.name}
 ---
 results: []

@@ -1,0 +1,21 @@
+multiplier: 3
+items:
+  - for: [1, 2, 3, 4]
+    num: ${item}
+    tripled: ${item * multiplier}
+    combined: ${item + multiplier}
+---
+items:
+  - combined: 4
+    num: 1
+    tripled: 3
+  - combined: 5
+    num: 2
+    tripled: 6
+  - combined: 6
+    num: 3
+    tripled: 9
+  - combined: 7
+    num: 4
+    tripled: 12
+multiplier: 3

@@ -212,44 +212,44 @@ func TestExpr_EvaluateCondition(t *testing.T) {
 		{
 			name:      "boolean-true",
 			condition: true,
-			st:        stack.New(nil),
+			st:        stack.New(),
 			expected:  true,
 		},
 		{
 			name:      "boolean-false",
 			condition: false,
-			st:        stack.New(nil),
+			st:        stack.New(),
 			expected:  false,
 		},
 		{
 			name:      "string-true",
 			condition: "true",
-			st:        stack.New(nil),
+			st:        stack.New(),
 			expected:  true,
 		},
 		{
 			name:      "string-false",
 			condition: "false",
-			st:        stack.New(nil),
+			st:        stack.New(),
 			expected:  false,
 		},
 		{
 			name:      "path-true",
 			condition: "active",
-			st:        stack.New(map[string]any{"active": true}),
+			st:        stack.NewStack(map[string]any{"active": true}),
 			expected:  true,
 		},
 		{
 			name:      "path-false",
 			condition: "active",
-			st:        stack.New(map[string]any{"active": false}),
+			st:        stack.NewStack(map[string]any{"active": false}),
 			expected:  false,
 		},
 		{
 			name:      "nested-path-true",
 			condition: "item.active",
 			st: func() *stack.Stack {
-				st := stack.New(nil)
+				st := stack.New()
 				st.Push(map[string]any{"item": map[string]any{"active": true}})
 				return st
 			}(),
@@ -259,7 +259,7 @@ func TestExpr_EvaluateCondition(t *testing.T) {
 			name:      "nested-path-false",
 			condition: "item.active",
 			st: func() *stack.Stack {
-				st := stack.New(nil)
+				st := stack.New()
 				st.Push(map[string]any{"item": map[string]any{"active": false}})
 				return st
 			}(),
@@ -268,25 +268,25 @@ func TestExpr_EvaluateCondition(t *testing.T) {
 		{
 			name:      "interpolation-true",
 			condition: "${active}",
-			st:        stack.New(map[string]any{"active": true}),
+			st:        stack.NewStack(map[string]any{"active": true}),
 			expected:  true,
 		},
 		{
 			name:      "interpolation-false",
 			condition: "${active}",
-			st:        stack.New(map[string]any{"active": false}),
+			st:        stack.NewStack(map[string]any{"active": false}),
 			expected:  false,
 		},
 		{
 			name:      "comparison-eq-true",
 			condition: "${status} == 'active'",
-			st:        stack.New(map[string]any{"status": "active"}),
+			st:        stack.NewStack(map[string]any{"status": "active"}),
 			expected:  true,
 		},
 		{
 			name:      "comparison-eq-false",
 			condition: "${status} == 'active'",
-			st:        stack.New(map[string]any{"status": "inactive"}),
+			st:        stack.NewStack(map[string]any{"status": "inactive"}),
 			expected:  false,
 		},
 	}

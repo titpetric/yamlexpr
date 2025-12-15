@@ -43,7 +43,7 @@ func (e *Expr) Process(doc any, rootVars map[string]any) (any, error) {
 		}
 	}
 
-	return e.ProcessWithStack(doc, stack.New(rootVars))
+	return e.ProcessWithStack(doc, stack.NewStack(rootVars))
 }
 
 // Load loads a YAML file and processes it with expression evaluation.
@@ -79,16 +79,16 @@ func (e *Expr) Load(filename string) (map[string]any, error) {
 // ProcessWithStack processes a YAML document with a given variable stack.
 func (e *Expr) ProcessWithStack(doc any, st *stack.Stack) (any, error) {
 	if st == nil {
-		st = stack.New(nil)
+		st = stack.New()
 	}
-	ctx := NewExprContext(&ExprContextOptions{
+	ctx := NewContext(&ContextOptions{
 		Stack: st,
 	})
 	return e.processWithContext(ctx, doc)
 }
 
 // processWithContext is the internal implementation that handles the processing with context.
-func (e *Expr) processWithContext(ctx *ExprContext, doc any) (any, error) {
+func (e *Expr) processWithContext(ctx *Context, doc any) (any, error) {
 	switch d := doc.(type) {
 	case map[string]any:
 		return e.processMapWithContext(ctx, d)
@@ -103,8 +103,8 @@ func (e *Expr) processWithContext(ctx *ExprContext, doc any) (any, error) {
 	}
 }
 
-// processMapWithContext processes a map with ExprContext, handling include, for, and if directives.
-func (e *Expr) processMapWithContext(ctx *ExprContext, m map[string]any) (any, error) {
+// processMapWithContext processes a map with Context, handling include, for, and if directives.
+func (e *Expr) processMapWithContext(ctx *Context, m map[string]any) (any, error) {
 	result := make(map[string]any)
 
 	// Check for include directive
@@ -152,8 +152,8 @@ func (e *Expr) processMapWithContext(ctx *ExprContext, m map[string]any) (any, e
 	return result, nil
 }
 
-// processSliceWithContext processes a slice with ExprContext, handling for and if directives.
-func (e *Expr) processSliceWithContext(ctx *ExprContext, s []any) (any, error) {
+// processSliceWithContext processes a slice with Context, handling for and if directives.
+func (e *Expr) processSliceWithContext(ctx *Context, s []any) (any, error) {
 	result := make([]any, 0, len(s))
 
 	for i, item := range s {
@@ -202,8 +202,8 @@ func (e *Expr) processSliceWithContext(ctx *ExprContext, s []any) (any, error) {
 	return result, nil
 }
 
-// handleIncludeWithContext processes an include directive with ExprContext.
-func (e *Expr) handleIncludeWithContext(ctx *ExprContext, incl any, result map[string]any) error {
+// handleIncludeWithContext processes an include directive with Context.
+func (e *Expr) handleIncludeWithContext(ctx *Context, incl any, result map[string]any) error {
 	// Handle single file
 	if filename, ok := incl.(string); ok {
 		return e.loadAndMergeFileWithContext(ctx, filename, result)
@@ -224,8 +224,8 @@ func (e *Expr) handleIncludeWithContext(ctx *ExprContext, incl any, result map[s
 	return fmt.Errorf("include must be a string or list of strings, got %T", incl)
 }
 
-// loadAndMergeFileWithContext loads a YAML file and merges it into the result with ExprContext.
-func (e *Expr) loadAndMergeFileWithContext(ctx *ExprContext, filename string, result map[string]any) error {
+// loadAndMergeFileWithContext loads a YAML file and merges it into the result with Context.
+func (e *Expr) loadAndMergeFileWithContext(ctx *Context, filename string, result map[string]any) error {
 	data, err := fs.ReadFile(e.fs, filename)
 	if err != nil {
 		return fmt.Errorf("error reading file %s: %w", filename, err)
@@ -297,7 +297,7 @@ func mergeRecursive(dst, src any) {
 	}
 }
 
-// handleForWithContext processes a for directive with ExprContext.
+// handleForWithContext processes a for directive with Context.
 // The for directive expands a map template for each item in a collection.
 // Supports both simple and complex for expressions:
 //   - "item in items" - binds each item to 'item'
@@ -305,7 +305,7 @@ func mergeRecursive(dst, src any) {
 //   - Variables can be "_" to omit from the stack
 //
 // m should contain "for" key and template keys.
-func (e *Expr) handleForWithContext(ctx *ExprContext, forExpr any, m map[string]any) (any, error) {
+func (e *Expr) handleForWithContext(ctx *Context, forExpr any, m map[string]any) (any, error) {
 	// Get the collection to iterate over and parse the for expression
 	var items []any
 	var loopVars *ForLoopExpr
@@ -394,7 +394,7 @@ func (e *Expr) handleForWithContext(ctx *ExprContext, forExpr any, m map[string]
 		}
 
 		// Create new stack scope with loop variables
-		ctx.PushStackScope(scope)
+		ctx.Push(scope)
 
 		// Create a fresh copy of the template for each iteration (all keys except for directive)
 		template := make(map[string]any)
@@ -410,7 +410,7 @@ func (e *Expr) handleForWithContext(ctx *ExprContext, forExpr any, m map[string]
 		// Process template with current item in scope
 		expanded, err := e.processMapWithContext(itemCtx, template)
 		if err != nil {
-			ctx.PopStackScope()
+			ctx.Pop()
 			return nil, err
 		}
 		if expanded != nil {
@@ -418,7 +418,7 @@ func (e *Expr) handleForWithContext(ctx *ExprContext, forExpr any, m map[string]
 		}
 
 		// Pop the scope for this iteration
-		ctx.PopStackScope()
+		ctx.Pop()
 	}
 
 	return result, nil

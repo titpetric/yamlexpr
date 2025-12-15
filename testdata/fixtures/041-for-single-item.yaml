@@ -1,12 +1,19 @@
+vars:
+  items:
+    - alice
+
 users:
-  - for: ["alice"]
-    name: "${item}"
-    role: "admin"
+  - for: item in vars.items
+    name: ${item}
+    role: admin
 metadata:
   version: "1.0"
 ---
-users:
-  - name: "alice"
-    role: "admin"
 metadata:
   version: "1.0"
+users:
+  - name: alice
+    role: admin
+vars:
+  items:
+    - alice

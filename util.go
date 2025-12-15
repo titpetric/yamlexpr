@@ -103,7 +103,7 @@ func interpolateString(s string, st *stack.Stack) string {
 // interpolateStringHelper is a helper to interpolate a single string without a full Expr instance.
 func interpolateStringHelper(s string, st *stack.Stack) string {
 	if st == nil {
-		st = stack.New(nil)
+		st = stack.New()
 	}
 	return interpolateString(s, st)
 }

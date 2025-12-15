@@ -19,13 +19,13 @@ projectList:
 ---
 # Part 2: Template with for and if directives
 projects:
-  - for: project in projectList
-    if: project.enabled
-    project_name: "${project.name}"
-    active_teams:
-      - for: team in project.teams
-        if: team.active
-        team_name: "${team.name}"
+   - for: project in projectList
+     if: project.enabled
+     project_name: ${project.name}
+     active_teams:
+       - for: team in project.teams
+         if: team.active
+         team_name: ${team.name}
 ---
 # Part 3: Expected result (filtered output)
 projects:

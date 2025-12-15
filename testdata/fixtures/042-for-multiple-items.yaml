@@ -1,7 +1,7 @@
 users:
-  - for: ["alice", "bob", "charlie"]
-    name: "${item}"
-    active: true
+   - for: ["alice", "bob", "charlie"]
+     name: ${item}
+     active: true
 ---
 users:
   - name: "alice"

@@ -1,15 +1,15 @@
 organizations:
-  - for:
-      - name: "Acme"
-        country: "USA"
-      - name: "TechCorp"
-        country: "UK"
-      - name: "GlobalCo"
-        country: "Canada"
-    org_name: "${item.name}"
-    location:
-      country: "${item.country}"
-      timezone: "UTC"
+   - for:
+       - name: "Acme"
+         country: "USA"
+       - name: "TechCorp"
+         country: "UK"
+       - name: "GlobalCo"
+         country: "Canada"
+     org_name: ${item.name}
+     location:
+       country: ${item.country}
+       timezone: "UTC"
 ---
 organizations:
   - org_name: "Acme"

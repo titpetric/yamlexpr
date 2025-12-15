@@ -1,0 +1,16 @@
+items:
+  - for: ["hello", "world", "golang"]
+    word: ${item}
+    length: ${len(item)}
+    upper: ${upper(item)}
+---
+items:
+  - length: 5
+    upper: HELLO
+    word: hello
+  - length: 5
+    upper: WORLD
+    word: world
+  - length: 6
+    upper: GOLANG
+    word: golang

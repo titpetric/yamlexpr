@@ -22,7 +22,7 @@ func TestDebugForWithIf(t *testing.T) {
 		},
 	}
 
-	st := stack.New(nil)
+	st := stack.New()
 	e := New(nil)
 
 	// Test interpolation with item

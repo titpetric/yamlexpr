@@ -40,18 +40,31 @@ func getCachedPath(expr string) []string {
 	return parts
 }
 
-// Stack provides stack-based variable lookup and resolution.
+// Stack provides stack-based variable lookup and convenient typed accessors.
 type Stack struct {
-	stack []map[string]any // bottom..top, top is last element
+	stack    []map[string]any // bottom..top, top is last element
+	rootData any              // original data passed to Render (for struct field fallback)
 }
 
-// New constructs a Stack with an optional initial root map (nil allowed).
-func New(root map[string]any) *Stack {
+// New returns a new empty stack.
+func New() *Stack {
+	return NewStack(nil)
+}
+
+// NewStack constructs a Stack with an optional initial root map (nil allowed).
+// The originalData parameter is the original value passed to Render (for struct field fallback).
+func NewStack(root map[string]any) *Stack {
+	return NewStackWithData(root, nil)
+}
+
+// NewStackWithData constructs a Stack with both map data and original root data for struct field fallback.
+func NewStackWithData(root map[string]any, originalData any) *Stack {
 	s := &Stack{}
 	if root == nil {
 		root = map[string]any{}
 	}
 	s.stack = []map[string]any{root}
+	s.rootData = originalData
 	return s
 }
 
@@ -63,8 +76,14 @@ var mapPool = sync.Pool{
 }
 
 // Copy returns a copy of the stack that can be discarded.
+// The root data is retained as is, the envmap is a copy.
 func (s *Stack) Copy() *Stack {
-	return New(s.All())
+	return NewStackWithData(s.All(), s.rootData)
+}
+
+// Count returns the count of stack frames.
+func (s *Stack) Count() int {
+	return len(s.stack)
 }
 
 // Push a new map as a top-most Stack.
@@ -107,10 +126,17 @@ func (s *Stack) Set(key string, val any) {
 }
 
 // Lookup searches stack from top to bottom for a plain identifier (no dots).
+// If not found in the stack maps, it checks the root data struct (if any).
 // Returns (value, true) if found.
 func (s *Stack) Lookup(name string) (any, bool) {
 	for i := len(s.stack) - 1; i >= 0; i-- {
 		if v, ok := s.stack[i][name]; ok {
+			return v, true
+		}
+	}
+	// Fallback: check root data struct fields
+	if s.rootData != nil {
+		if v, ok := ResolveValue(s.rootData, name); ok {
 			return v, true
 		}
 	}
@@ -168,6 +194,10 @@ func (s *Stack) resolveStep(cur any, p string) any {
 		}
 	}
 
+	// Fall back to struct field resolution
+	if v, ok := ResolveValue(cur, p); ok {
+		return v
+	}
 	return nil
 }
 
@@ -232,18 +262,14 @@ func (s *Stack) GetSlice(expr string) ([]any, bool) {
 	if !ok || v == nil {
 		return nil, false
 	}
-	rv := reflect.ValueOf(v)
-	if rv.Kind() != reflect.Slice && rv.Kind() != reflect.Array {
-		return nil, false
+	if IsSlice(v) {
+		return SliceToAny(v), true
 	}
-	result := make([]any, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		result[i] = rv.Index(i).Interface()
-	}
-	return result, true
+	return nil, false
 }
 
 // GetMap returns map[string]any or converts map[string]string to map[string]any.
+// Avoids reflection for other map types.
 func (s *Stack) GetMap(expr string) (map[string]any, bool) {
 	v, ok := s.Resolve(expr)
 	if !ok || v == nil {
@@ -263,14 +289,20 @@ func (s *Stack) GetMap(expr string) (map[string]any, bool) {
 	}
 }
 
-// All converts the Stack to a map[string]any.
-// Iterates through stack from bottom to top, with top overriding bottom.
+// All converts the Stack to a map[string]any for expr evaluation.
+// Includes all accessible values from stack and struct fields.
 func (s *Stack) All() map[string]any {
 	result := make(map[string]any)
+	// Iterate through stack from bottom to top, with top overriding bottom
 	for i := 0; i < len(s.stack); i++ {
 		for k, v := range s.stack[i] {
 			result[k] = v
 		}
+	}
+
+	// Also include struct fields from rootData (if available)
+	if s.rootData != nil {
+		PopulateStructFields(result, s.rootData)
 	}
 	return result
 }
@@ -307,6 +339,7 @@ func (s *Stack) ForEach(expr string, fn func(index int, value any) error) error 
 	}
 
 	return nil
+	// return fmt.Errorf("unsupported collection type: %T, expr: %s", v, expr)
 }
 
 // Helpers

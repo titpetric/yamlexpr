@@ -1,0 +1,28 @@
+for: (idx, item) in versions
+versions:
+  - "1.0"
+  - "1.1"
+  - "2.0"
+version: ${item}
+index: ${idx}
+---
+version: "1.0"
+index: 0
+versions:
+  - "1.0"
+  - "1.1"
+  - "2.0"
+---
+version: "1.1"
+index: 1
+versions:
+  - "1.0"
+  - "1.1"
+  - "2.0"
+---
+version: "2.0"
+index: 2
+versions:
+  - "1.0"
+  - "1.1"
+  - "2.0"

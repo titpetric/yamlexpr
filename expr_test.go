@@ -16,7 +16,7 @@ func TestNew(t *testing.T) {
 
 func TestExpr_ProcessWithStack(t *testing.T) {
 	e := yamlexpr.New(nil)
-	st := stack.New(map[string]any{"name": "John"})
+	st := stack.NewStack(map[string]any{"name": "John"})
 
 	// Test with primitive value
 	result, err := e.ProcessWithStack("hello", st)

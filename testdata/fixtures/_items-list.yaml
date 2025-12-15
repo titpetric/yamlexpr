@@ -1,0 +1,7 @@
+items:
+   - product: "apple"
+     price: 1.50
+   - product: "banana"
+     price: 0.75
+   - product: "orange"
+     price: 2.00

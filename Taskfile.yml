@@ -10,6 +10,13 @@ vars:
   toolchain: '{{.goversion}}+auto'
 
 tasks:
+  default:
+    desc: "Run the playground server"
+    cmds:
+      - task: fmt
+      - task: lint
+      - go build -o bin/ ./cmd/yamlexpr
+
   fmt:
     desc: "Format code and tidy dependencies"
     cmds:
@@ -23,11 +30,6 @@ tasks:
     cmds:
       - task: mdox:fmt
 
-  default:
-    desc: "Run the playground server"
-    cmds:
-      - go run ./cmd/vuego-playground
-
   lint:
     desc: "Lint codebase"
     cmds:
@@ -36,7 +38,7 @@ tasks:
       - task: lint:godoc
 
   lint:tools:golangci-lint:
-    cmd: go tool -modfile=go.tool.mod golangci-lint run ./...
+    cmd: golangci-lint run --fix ./...
 
   lint:godoc:
     desc: "Lint godoc comments"
