@@ -456,7 +456,7 @@ func evaluateConditionWithPath(condition any, st *stack.Stack, path string) (boo
 
 		// Handle interpolated expressions like "${item.active}"
 		if strings.Contains(v, "${") {
-			str, err := interpolateStringWithContext(v, st, path)
+			str, err := handlers.InterpolateStringWithContext(st, v, path)
 			if err != nil {
 				return false, err
 			}
