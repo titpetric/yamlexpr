@@ -245,7 +245,7 @@ database:
 
 Create a components directory structure:
 
-```
+```text
 config/
 ├── base/
 │   ├── _database.yaml

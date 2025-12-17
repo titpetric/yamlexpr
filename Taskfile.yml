@@ -82,3 +82,14 @@ tasks:
       - fmt
     cmds:
       - go test -bench=. -benchmem -cpu 1,2,4 ./...
+
+  generate:
+    desc: "Generate documentation from templates"
+    dir: docs/features
+    cmds:
+      - bash for-loops.md.sh > for-loops.md
+      - bash conditionals.md.sh > conditionals.md
+      - bash matrix.md.sh > matrix.md
+      - bash include.md.sh > include.md
+      - bash interpolation.md.sh > interpolation.md
+      - bash document-expansion.md.sh > document-expansion.md

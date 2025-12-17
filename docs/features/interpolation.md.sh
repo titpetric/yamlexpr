@@ -7,7 +7,7 @@ cat << 'EOF'
 
 ## Syntax Cheat Sheet
 
-```
+```yaml
 ${variable}                   # Simple variable substitution
 ${object.nested.field}        # Nested field access
 ${array[0]}                   # Array index access
@@ -32,15 +32,20 @@ The `${}` syntax was chosen to remain valid YAML while avoiding parser ambiguity
 ### Simple Substitution
 
 **Input:**
+
+```yaml
 EOF
 
 cat /root/github/yamlexpr-main/testdata/fixtures/046-expression-with-variables.yaml | head -10
 cat << 'EOF'
+```
 
 **Output:**
+
+```yaml
 EOF
 
-cd /root/github/yamlexpr-main && go run cmd/yamlexpr/main.go << 'YAMLEOF' 2>/dev/null | sed -n '/^---$/,$ {/^---$/d; p}'
+cd /root/github/yamlexpr-main && go run cmd/yamlexpr/main.go << 'YAMLEOF' 2>/dev/null
 apiVersion: v1
 metadata:
   name: ${app}
@@ -54,10 +59,13 @@ version: "1.0.0"
 YAMLEOF
 
 cat << 'EOF'
+```
 
 ### Nested Field Access
 
 **Input:**
+
+```yaml
 EOF
 
 cat > /tmp/nested.yaml << 'YAMLEOF'
@@ -71,8 +79,11 @@ YAMLEOF
 cd /root/github/yamlexpr-main && go run cmd/yamlexpr/main.go /tmp/nested.yaml 2>/dev/null || cat /tmp/nested.yaml
 
 cat << 'EOF'
+```
 
 **Output:**
+
+```yaml
 EOF
 
 cd /root/github/yamlexpr-main && go run cmd/yamlexpr/main.go << 'YAMLEOF' 2>/dev/null
@@ -84,24 +95,31 @@ connection_string: "jdbc:postgresql://${config.database.host}:${config.database.
 YAMLEOF
 
 cat << 'EOF'
+```
 
 ### In For Loops
 
 Variables can be interpolated within for loop iterations. Each loop variable becomes available for substitution.
 
 **Input:**
+
+```yaml
 EOF
 
 cat /root/github/yamlexpr-main/testdata/fixtures/050-for-with-if-filtering.yaml | head -20
 
 cat << 'EOF'
+```
 
 **Output:**
+
+```yaml
 EOF
 
 cd /root/github/yamlexpr-main && cat testdata/fixtures/050-for-with-if-filtering.yaml | sed -n '/^---$/,$ {/^---$/d; p}'
 
 cat << 'EOF'
+```
 
 ## Common Use Cases
 
