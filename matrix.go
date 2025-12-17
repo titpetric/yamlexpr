@@ -10,10 +10,14 @@ import (
 // MatrixDirective represents the parsed matrix configuration
 // Fields are exported for testing purposes.
 type MatrixDirective struct {
+	// Dimensions contains array values that form the cartesian product.
 	Dimensions map[string][]any
-	Variables  map[string]any // Non-array values to add to each job
-	Include    []map[string]any
-	Exclude    []map[string]any
+	// Variables contains non-array values to add to each combination.
+	Variables map[string]any
+	// Include specifies additional custom combinations to add.
+	Include []map[string]any
+	// Exclude specifies combinations to filter out from the product.
+	Exclude []map[string]any
 }
 
 // parseMatrixDirective converts the matrix map into structured form
@@ -84,6 +88,13 @@ func expandMatrixBase(md *MatrixDirective) []map[string]any {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
+
+	// Check if any dimension is empty - if so, return empty result
+	for _, k := range keys {
+		if len(md.Dimensions[k]) == 0 {
+			return []map[string]any{}
+		}
+	}
 
 	// Generate cartesian product using indices
 	result := []map[string]any{}

@@ -36,10 +36,14 @@ type ForLoopExpr struct {
 // MatrixDirective represents the parsed matrix configuration
 // Fields are exported for testing purposes.
 type MatrixDirective struct {
+	// Dimensions contains array values that form the cartesian product.
 	Dimensions map[string][]any
-	Variables  map[string]any // Non-array values to add to each job
-	Include    []map[string]any
-	Exclude    []map[string]any
+	// Variables contains non-array values to add to each combination.
+	Variables map[string]any
+	// Include specifies additional custom combinations to add.
+	Include []map[string]any
+	// Exclude specifies combinations to filter out from the product.
+	Exclude []map[string]any
 }
 ```
 

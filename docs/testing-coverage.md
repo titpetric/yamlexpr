@@ -12,10 +12,10 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 | Status | Package                          | Coverage | Cognitive | Lines |
 |--------|----------------------------------|----------|-----------|-------|
-| ❌     | titpetric/yamlexpr               | 54.00%   | 359       | 988   |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | 0.00%    | 80        | 248   |
+| ✅     | titpetric/yamlexpr               | 83.46%   | 356       | 994   |
+| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | 25.00%   | 80        | 248   |
 | ✅     | titpetric/yamlexpr/interpolation | 80.47%   | 88        | 290   |
-| ❌     | titpetric/yamlexpr/model         | 64.27%   | 24        | 191   |
+| ❌     | titpetric/yamlexpr/model         | 70.33%   | 24        | 191   |
 | ❌     | titpetric/yamlexpr/stack         | 79.10%   | 156       | 582   |
 
 ## Functions
@@ -23,33 +23,33 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | Status | Package                          | Function                         | Coverage | Cognitive |
 |--------|----------------------------------|----------------------------------|----------|-----------|
 | ✅     | titpetric/yamlexpr               | Expr.Load                        | 69.20%   | 4         |
-| ❌     | titpetric/yamlexpr               | Expr.Parse                       | 61.50%   | 9         |
-| ❌     | titpetric/yamlexpr               | Expr.handleForWithContext        | 48.20%   | 42        |
-| ❌     | titpetric/yamlexpr               | Expr.handleIncludeWithContext    | 0.00%    | 11        |
-| ❌     | titpetric/yamlexpr               | Expr.handleMatrixWithContext     | 0.00%    | 56        |
-| ❌     | titpetric/yamlexpr               | Expr.loadAndMergeFileWithContext | 0.00%    | 6         |
+| ✅     | titpetric/yamlexpr               | Expr.Parse                       | 92.30%   | 9         |
+| ❌     | titpetric/yamlexpr               | Expr.handleForWithContext        | 66.10%   | 42        |
+| ❌     | titpetric/yamlexpr               | Expr.handleIncludeWithContext    | 77.80%   | 11        |
+| ✅     | titpetric/yamlexpr               | Expr.handleMatrixWithContext     | 88.20%   | 56        |
+| ✅     | titpetric/yamlexpr               | Expr.loadAndMergeFileWithContext | 82.40%   | 7         |
 | ✅     | titpetric/yamlexpr               | Expr.process                     | 100.00%  | 4         |
-| ❌     | titpetric/yamlexpr               | Expr.processMapWithContext       | 75.00%   | 15        |
-| ❌     | titpetric/yamlexpr               | Expr.processSliceWithContext     | 54.80%   | 40        |
+| ✅     | titpetric/yamlexpr               | Expr.processMapWithContext       | 95.80%   | 15        |
+| ✅     | titpetric/yamlexpr               | Expr.processSliceWithContext     | 87.10%   | 40        |
 | ✅     | titpetric/yamlexpr               | Expr.processWithContext          | 100.00%  | 1         |
 | ✅     | titpetric/yamlexpr               | Expr.processWithStack            | 75.00%   | 1         |
 | ✅     | titpetric/yamlexpr               | MapMatchesSpec                   | 100.00%  | 5         |
 | ✅     | titpetric/yamlexpr               | New                              | 75.00%   | 1         |
 | ✅     | titpetric/yamlexpr               | ValuesEqual                      | 100.00%  | 0         |
-| ❌     | titpetric/yamlexpr               | applyExcludes                    | 0.00%    | 7         |
-| ❌     | titpetric/yamlexpr               | applyIncludes                    | 0.00%    | 19        |
+| ✅     | titpetric/yamlexpr               | applyExcludes                    | 100.00%  | 7         |
+| ❌     | titpetric/yamlexpr               | applyIncludes                    | 63.20%   | 19        |
 | ❌     | titpetric/yamlexpr               | evaluateConditionWithPath        | 54.50%   | 23        |
-| ❌     | titpetric/yamlexpr               | expandMatrixBase                 | 0.00%    | 12        |
+| ✅     | titpetric/yamlexpr               | expandMatrixBase                 | 100.00%  | 15        |
 | ✅     | titpetric/yamlexpr               | isQuoted                         | 100.00%  | 3         |
 | ✅     | titpetric/yamlexpr               | isTruthy                         | 22.20%   | 1         |
 | ✅     | titpetric/yamlexpr               | isValidVarName                   | 75.00%   | 1         |
-| ❌     | titpetric/yamlexpr               | mergeRecursive                   | 0.00%    | 31        |
+| ✅     | titpetric/yamlexpr               | mergeRecursive                   | 90.90%   | 24        |
 | ✅     | titpetric/yamlexpr               | parseForExpr                     | 95.20%   | 13        |
-| ❌     | titpetric/yamlexpr               | parseMatrixDirective             | 0.00%    | 30        |
+| ✅     | titpetric/yamlexpr               | parseMatrixDirective             | 90.90%   | 30        |
 | ✅     | titpetric/yamlexpr               | parseYAML                        | 75.00%   | 1         |
 | ✅     | titpetric/yamlexpr               | quoteUnquotedComparisons         | 84.60%   | 16        |
 | ✅     | titpetric/yamlexpr               | valuesEqual                      | 92.90%   | 7         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | deepEqual                        | 0.00%    | 4         |
+| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | deepEqual                        | 75.00%   | 4         |
 | ❌     | titpetric/yamlexpr/cmd/yamlexpr  | main                             | 0.00%    | 13        |
 | ❌     | titpetric/yamlexpr/cmd/yamlexpr  | testFixtures                     | 0.00%    | 63        |
 | ✅     | titpetric/yamlexpr/interpolation | ContainsInterpolation            | 100.00%  | 1         |
@@ -65,14 +65,14 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     | titpetric/yamlexpr/model         | Config.IfDirective               | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr/model         | Config.IncludeDirective          | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr/model         | Config.MatrixDirective           | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Context.AppendPath               | 81.80%   | 8         |
+| ✅     | titpetric/yamlexpr/model         | Context.AppendPath               | 90.90%   | 8         |
 | ✅     | titpetric/yamlexpr/model         | Context.Count                    | 0.00%    | 0         |
 | ❌     | titpetric/yamlexpr/model         | Context.FormatIncludeChain       | 0.00%    | 1         |
 | ✅     | titpetric/yamlexpr/model         | Context.Path                     | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr/model         | Context.Pop                      | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr/model         | Context.Push                     | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr/model         | Context.Stack                    | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Context.WithInclude              | 0.00%    | 0         |
+| ✅     | titpetric/yamlexpr/model         | Context.WithInclude              | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr/model         | Context.WithPath                 | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr/model         | DefaultConfig                    | 100.00%  | 0         |
 | ✅     | titpetric/yamlexpr/model         | NewContext                       | 75.00%   | 3         |

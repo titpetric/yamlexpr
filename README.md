@@ -1,13 +1,25 @@
 # yamlexpr
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/yamlexpr.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr) [![Go Report Card](https://goreportcard.com/badge/github.com/titpetric/yamlexpr)](https://goreportcard.com/report/github.com/titpetric/yamlexpr) [![PkgGoDev](https://img.shields.io/badge/docs-pkg.go.dev-blue.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr) [![Test Coverage](https://img.shields.io/badge/coverage-82.26%25-green)](docs/testing-coverage.md)
+[![Go Reference](https://pkg.go.dev/badge/github.com/titpetric/yamlexpr.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr) [![Go Report Card](https://goreportcard.com/badge/github.com/titpetric/yamlexpr)](https://goreportcard.com/report/github.com/titpetric/yamlexpr) [![PkgGoDev](https://img.shields.io/badge/docs-pkg.go.dev-blue.svg)](https://pkg.go.dev/github.com/titpetric/yamlexpr) [![Test Coverage](https://img.shields.io/badge/coverage-40.1%25-yellowgreen)](docs/testing-coverage.md)
 
 YAML composition, interpolation, and conditional evaluation for Go.
 
 ## Documentation
 
+### Getting Started
 - **[Tutorial](docs/tutorial.md)** - Comprehensive guide with real-world examples
-- **[Syntax Reference](docs/syntax.md)** - Complete guide to `include`, `for`, and `if` directives
+- **[Quick Reference](docs/features/QUICK_REFERENCE.md)** - Syntax cheat sheet and common patterns
+
+### Feature Documentation
+- **[Interpolation](docs/features/interpolation.md)** - Variable substitution with `${variable}` syntax
+- **[Conditionals](docs/features/conditionals.md)** - Include/exclude with `if:` directive
+- **[For Loops](docs/features/for-loops.md)** - Iterate and expand with `for:` directive
+- **[Matrix](docs/features/matrix.md)** - Generate combinations with `matrix:` directive
+- **[Include](docs/features/include.md)** - Compose files with `include:` directive
+- **[Document Expansion](docs/features/document-expansion.md)** - Root-level directives creating multiple documents
+
+### Reference
+- **[Syntax Reference](docs/syntax.md)** - Complete guide to all directives
 - **[Custom Syntax Configuration](docs/custom-syntax.md)** - Configure directive keywords (Vue, Angular, or custom style)
 - **[API Reference](docs/api.md)** - Complete API documentation
 - **[Design Document](docs/DESIGN.md)** - Architecture and design decisions
@@ -40,17 +52,20 @@ func main() {
 	expr := yamlexpr.New(os.DirFS("."))
 
 	// Load and evaluate a YAML file
-	result, err := expr.Load("config.yaml")
+	// Returns a slice of Documents (may be multiple if using root-level for: or matrix:)
+	docs, err := expr.Load("config.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Result is map[string]any containing the processed YAML
-	fmt.Printf("%+v\n", result)
+	// Process each resulting document
+	for i, doc := range docs {
+		fmt.Printf("Document %d: %+v\n", i, doc)
+	}
 }
 ```
 
-### Process YAML Data with Variables
+### Parse and Evaluate YAML Data
 
 ```go
 package main
@@ -61,15 +76,14 @@ import (
 	"os"
 
 	"github.com/titpetric/yamlexpr"
-	"github.com/titpetric/yamlexpr/stack"
 )
 
 func main() {
 	// Create an Expr evaluator
 	expr := yamlexpr.New(os.DirFS("."))
 
-	// Prepare your YAML data
-	data := map[string]any{
+	// Prepare your YAML data as Document (map[string]any)
+	data := yamlexpr.Document{
 		"name": "production",
 		"env": map[string]any{
 			"debug": false,
@@ -81,30 +95,16 @@ func main() {
 		},
 	}
 
-	// Process with variable interpolation, conditionals, and composition
-	result, err := expr.Process(data)
+	// Parse with variable interpolation, conditionals, and composition
+	docs, err := expr.Parse(data)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Result is map[string]any with all expressions evaluated
-	fmt.Printf("%+v\n", result)
-}
-```
-
-### Process with Custom Variables
-
-```go
-// Create a custom variable stack
-st := stack.New(map[string]any{
-	"version": "1.0.0",
-	"region":  "us-west-2",
-})
-
-expr := yamlexpr.New(os.DirFS("."))
-result, err := expr.ProcessWithStack(data, st)
-if err != nil {
-	log.Fatal(err)
+	// Process each resulting document
+	for i, doc := range docs {
+		fmt.Printf("Document %d: %+v\n", i, doc)
+	}
 }
 ```
 
@@ -116,10 +116,11 @@ expr := yamlexpr.New(os.DirFS("."), yamlexpr.WithSyntax(yamlexpr.Syntax{
 	If:      "v-if",
 	For:     "v-for",
 	Include: "v-include",
+	Matrix:  "v-matrix",
 }))
 
-// Now your YAML can use v-if, v-for, and v-include
-result, err := expr.Load("config.yaml")
+// Now your YAML can use v-if, v-for, v-include, and v-matrix
+docs, err := expr.Load("config.yaml")
 ```
 
 See [Custom Syntax Configuration](docs/custom-syntax.md) for more examples.
@@ -129,7 +130,9 @@ See [Custom Syntax Configuration](docs/custom-syntax.md) for more examples.
 - [X] **Variable Interpolation**: Use `${variable.path}` syntax in string values
 - [X] **Conditionals**: Include/exclude blocks with `if:` directive
 - [X] **For Loops**: Iterate and expand templates with `for:` directive
+- [X] **Matrix Expansion**: Generate combinations with `matrix:` directive (with `exclude:` and `include:`)
 - [X] **Composition**: Include external YAML files with `include:` directive
+- [X] **Document Expansion**: Root-level directives create multiple output documents
 
 ## API
 

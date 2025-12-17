@@ -281,6 +281,10 @@ func (e *Expr) handleIncludeWithContext(ctx *Context, incl any, result map[strin
 
 // loadAndMergeFileWithContext loads a YAML file and merges it into the result with Context.
 func (e *Expr) loadAndMergeFileWithContext(ctx *Context, filename string, result map[string]any) error {
+	if e.fs == nil {
+		return fmt.Errorf("error including %s: no filesystem configured", filename)
+	}
+
 	data, err := fs.ReadFile(e.fs, filename)
 	if err != nil {
 		return fmt.Errorf("error reading file %s: %w", filename, err)
@@ -337,13 +341,8 @@ func mergeRecursive(dst, src any) {
 							dstMap[k] = v
 						}
 					case []any:
-						// Source is slice, append to existing
-						if dstSlice, isSlice := existingVal.([]any); isSlice {
-							dstMap[k] = append(dstSlice, v.([]any)...)
-						} else {
-							// Destination is not a slice, overwrite
-							dstMap[k] = v
-						}
+						// Source is slice, overwrite existing
+						dstMap[k] = v
 					default:
 						// Scalar value, overwrite
 						dstMap[k] = v

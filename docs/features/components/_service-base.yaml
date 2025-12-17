@@ -1,0 +1,12 @@
+# Common service configuration defaults
+# Used in for loops and includes to reduce duplication
+
+timeout: 30
+retries: 3
+health_check:
+  enabled: true
+  interval: 10
+  timeout: 5
+logging:
+  level: info
+  format: json

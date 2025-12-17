@@ -1,0 +1,25 @@
+# Example: Composing components together
+# Demonstrates how includes work with for loops and conditionals
+
+for: svc in services
+name: "${svc.name}"
+port: ${svc.port}
+replicas: ${svc.replicas}
+enabled: ${svc.enabled}
+include:
+  - "_service-base.yaml"
+  - "_database-config.yaml"
+
+services:
+  - name: "api"
+    port: 8080
+    replicas: 3
+    enabled: true
+  - name: "worker"
+    port: 9000
+    replicas: 1
+    enabled: true
+  - name: "debug-tool"
+    port: 3000
+    replicas: 0
+    enabled: false

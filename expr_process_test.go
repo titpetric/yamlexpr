@@ -309,3 +309,172 @@ func TestExpr_EvaluateCondition(t *testing.T) {
 		})
 	}
 }
+
+// TestProcessMapWithContext_EdgeCases tests map processing with edge cases.
+func TestProcessMapWithContext_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   map[string]any
+		checkFn func(t *testing.T, docs []Document, err error)
+	}{
+		{
+			name: "nested-maps-with-interpolation",
+			input: map[string]any{
+				"config": map[string]any{
+					"db": map[string]any{
+						"host": "${db_host}",
+					},
+				},
+				"db_host": "localhost",
+			},
+			checkFn: func(t *testing.T, docs []Document, err error) {
+				require.NoError(t, err)
+				require.Len(t, docs, 1)
+				require.NotNil(t, docs[0]["config"])
+			},
+		},
+		{
+			name: "map-with-if-conditions",
+			input: map[string]any{
+				"settings": map[string]any{
+					"debug": map[string]any{
+						"if":    false,
+						"level": "verbose",
+					},
+				},
+			},
+			checkFn: func(t *testing.T, docs []Document, err error) {
+				require.NoError(t, err)
+				require.Len(t, docs, 1)
+				// Verify if condition was processed
+				require.NotNil(t, docs[0]["settings"])
+			},
+		},
+		{
+			name: "empty-nested-maps",
+			input: map[string]any{
+				"config": map[string]any{
+					"empty": map[string]any{},
+				},
+			},
+			checkFn: func(t *testing.T, docs []Document, err error) {
+				require.NoError(t, err)
+				require.Len(t, docs, 1)
+				require.NotNil(t, docs[0]["config"])
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := New(nil)
+			docs, err := e.Parse(tt.input)
+			tt.checkFn(t, docs, err)
+		})
+	}
+}
+
+// TestProcessSliceWithContext_EdgeCases tests slice processing with edge cases.
+func TestProcessSliceWithContext_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   map[string]any
+		checkFn func(t *testing.T, docs []Document, err error)
+	}{
+		{
+			name: "slice-with-interpolated-items",
+			input: map[string]any{
+				"hosts": []any{
+					"${host1}",
+					"${host2}",
+				},
+				"host1": "server1",
+				"host2": "server2",
+			},
+			checkFn: func(t *testing.T, docs []Document, err error) {
+				require.NoError(t, err)
+				require.Len(t, docs, 1)
+				require.NotNil(t, docs[0]["hosts"])
+			},
+		},
+		{
+			name: "slice-with-nested-maps",
+			input: map[string]any{
+				"items": []any{
+					map[string]any{
+						"id":   1,
+						"name": "${item_a}",
+					},
+				},
+				"item_a": "First",
+			},
+			checkFn: func(t *testing.T, docs []Document, err error) {
+				require.NoError(t, err)
+				require.Len(t, docs, 1)
+				require.NotNil(t, docs[0]["items"])
+			},
+		},
+		{
+			name: "slice-with-mixed-types",
+			input: map[string]any{
+				"data": []any{
+					"string",
+					42,
+					true,
+				},
+			},
+			checkFn: func(t *testing.T, docs []Document, err error) {
+				require.NoError(t, err)
+				require.Len(t, docs, 1)
+				require.NotNil(t, docs[0]["data"])
+			},
+		},
+		{
+			name: "slice-with-if-filter",
+			input: map[string]any{
+				"items": []any{
+					map[string]any{
+						"if":    true,
+						"value": "yes",
+					},
+				},
+			},
+			checkFn: func(t *testing.T, docs []Document, err error) {
+				require.NoError(t, err)
+				require.Len(t, docs, 1)
+				require.NotNil(t, docs[0]["items"])
+			},
+		},
+		{
+			name: "include-non-existent-file-produces-error",
+			input: map[string]any{
+				"config": map[string]any{
+					"include": "nonexistent.yaml",
+				},
+			},
+			checkFn: func(t *testing.T, docs []Document, err error) {
+				// Should produce an error when trying to include non-existent file
+				require.Error(t, err, "expected error for non-existent include file")
+			},
+		},
+		{
+			name: "empty-slice",
+			input: map[string]any{
+				"items": []any{},
+			},
+			checkFn: func(t *testing.T, docs []Document, err error) {
+				require.NoError(t, err)
+				require.Len(t, docs, 1)
+				require.NotNil(t, docs[0]["items"])
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := New(nil)
+			docs, err := e.Parse(tt.input)
+			tt.checkFn(t, docs, err)
+		})
+	}
+}
