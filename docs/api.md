@@ -14,6 +14,18 @@ type Document map[string]any
 ```
 
 ```go
+// DocumentContent represents a YAML document with optional frontmatter and sections.
+type DocumentContent struct {
+	// Frontmatter is the first yaml code block at the start of the file.
+	Frontmatter map[string]any
+	// Sections are the remaining yaml blocks in the file.
+	// With fixtures, the first section is the yamlexpr "template",
+	// while the remaining sections are document outputs from Parse().
+	Sections []string
+}
+```
+
+```go
 // Expr evaluates YAML documents with variable interpolation, conditionals, and composition.
 type Expr struct {
 	fs     fs.FS
@@ -85,7 +97,11 @@ var (
 
 - `func MapMatchesSpec (m map[string]any, spec map[string]any) bool`
 - `func New (rootFS fs.FS, opts ...ConfigOption) *Expr`
+- `func ParseDocument (content string) (*DocumentContent, error)`
+- `func TrimLeadingDocumentMarker (content string) string`
 - `func ValuesEqual (a,b any) bool`
+- `func (*DocumentContent) GetFrontmatterField (field string) (string, bool)`
+- `func (*DocumentContent) GetFrontmatterFieldWithDefault (field,defaultVal string) string`
 - `func (*Expr) Load (filename string) ([]Document, error)`
 - `func (*Expr) Parse (doc Document) ([]Document, error)`
 
@@ -105,12 +121,58 @@ New creates a new Expr evaluator with the given filesystem for includes. Optiona
 func New(rootFS fs.FS, opts ...ConfigOption) *Expr
 ```
 
+### ParseDocument
+
+ParseDocument parses a YAML document into frontmatter and sections separated by ---. The document format is:
+
+```
+---
+title: "Example"
+description: "..."
+---
+first section (usually input)
+---
+second section (usually output)
+---
+additional sections...
+```
+
+If the document starts with ---, it is trimmed before parsing.
+
+```go
+func ParseDocument(content string) (*DocumentContent, error)
+```
+
+### TrimLeadingDocumentMarker
+
+TrimLeadingDocumentMarker trims the leading --- from a YAML document if present.
+
+```go
+func TrimLeadingDocumentMarker(content string) string
+```
+
 ### ValuesEqual
 
 ValuesEqual checks if two values are equal, handling primitives and type coercion. Used for comparing values in matrix specs where YAML may parse numbers as float64 or int.
 
 ```go
 func ValuesEqual(a, b any) bool
+```
+
+### GetFrontmatterField
+
+GetFrontmatterField extracts a specific field from frontmatter.
+
+```go
+func (*DocumentContent) GetFrontmatterField(field string) (string, bool)
+```
+
+### GetFrontmatterFieldWithDefault
+
+GetFrontmatterFieldWithDefault extracts a field or returns a default.
+
+```go
+func (*DocumentContent) GetFrontmatterFieldWithDefault(field, defaultVal string) string
 ```
 
 ### Load

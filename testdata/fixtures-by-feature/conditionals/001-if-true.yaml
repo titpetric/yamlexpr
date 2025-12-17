@@ -1,0 +1,16 @@
+---
+title: "If Condition True"
+description: "When if: evaluates to true, the block is included in output."
+category: "basics"
+tags: ["if", "true", "conditional"]
+---
+config:
+  debug:
+    if: true
+    enabled: true
+    level: "verbose"
+---
+config:
+  debug:
+    enabled: true
+    level: "verbose"

@@ -6,15 +6,15 @@ catalog:
 ---
 items:
    - product: "apple"
-     price: 1.5
-   - product: "banana"
-     price: 0.75
-   - product: "orange"
      price: 2
+   - product: "banana"
+     price: 1
+   - product: "orange"
+     price: 3
 catalog:
    - item_name: apple
-     item_price: 1.5
-   - item_name: banana
-     item_price: 0.75
-   - item_name: orange
      item_price: 2
+   - item_name: banana
+     item_price: 1
+   - item_name: orange
+     item_price: 3

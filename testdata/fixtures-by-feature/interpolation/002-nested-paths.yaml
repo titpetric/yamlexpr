@@ -1,0 +1,25 @@
+---
+title: "Nested Path Interpolation"
+description: "Access nested object properties with dot notation in interpolation."
+category: "basics"
+tags: ["interpolation", "nested", "path"]
+---
+user:
+  name: "alice"
+  email: "alice@example.com"
+  profile:
+    title: "Engineer"
+messages:
+  welcome: "Welcome ${user.name}"
+  contact: "Reach ${user.name} at ${user.email}"
+  about: "${user.name} is a ${user.profile.title}"
+---
+user:
+  name: "alice"
+  email: "alice@example.com"
+  profile:
+    title: "Engineer"
+messages:
+  welcome: "Welcome alice"
+  contact: "Reach alice at alice@example.com"
+  about: "alice is a Engineer"

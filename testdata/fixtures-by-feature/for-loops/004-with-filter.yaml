@@ -1,0 +1,37 @@
+---
+title: "For Loop with Filter Condition"
+description: "Combine for: with if: to filter items during iteration."
+category: "advanced"
+tags: ["for", "if", "filter"]
+---
+enabled_services:
+  - for: svc in all_services
+    if: ${svc.enabled}
+    name: "${svc.name}"
+    port: ${svc.port}
+all_services:
+  - name: "api"
+    enabled: true
+    port: 8080
+  - name: "disabled-worker"
+    enabled: false
+    port: 9000
+  - name: "cache"
+    enabled: true
+    port: 6379
+---
+enabled_services:
+  - name: "api"
+    port: 8080
+  - name: "cache"
+    port: 6379
+all_services:
+  - name: "api"
+    enabled: true
+    port: 8080
+  - name: "disabled-worker"
+    enabled: false
+    port: 9000
+  - name: "cache"
+    enabled: true
+    port: 6379

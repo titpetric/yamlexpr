@@ -1,51 +1,6 @@
-# For Loops with `for:`
-
-## Syntax Cheat Sheet
-
-```yaml
-# Simple iteration over array variable
-items:
-  - for: item in items_list
-    name: "${item}"
-
-# With index and value
-services:
-  - for: (index, service) in all_services
-    number: ${index}
-    name: "${service.name}"
-
-# Ignore index with underscore
-configs:
-  - for: (_, config) in configurations
-    setting: "${config.value}"
-
-# Ignore value with underscore
-indexes:
-  - for: (idx, _) in items
-    position: ${idx}
-
-# Direct array literal
-statuses:
-  - for: status in ["active", "pending", "failed"]
-    current: "${status}"
-```
-
-## Description
-
-The `for:` directive expands an array by iterating over values and creating multiple items. This is essential for generating repetitive configuration structures and templates.
-
-Each iteration creates a copy of the template with loop variables available for interpolation and expressions. The `for:` directive itself is removed from each output item.
-
-## Core Concepts
-
-- **Iteration variable**: The variable name(s) introduced by the loop
-- **Source array**: The array being iterated (can be a variable reference or literal array)
-- **Template**: All other keys in the block become the template for each iteration
-- **Scope**: Loop variables are available in the iteration scope via interpolation and expressions
-
-## Iteration Patterns
-
 ### Simple Value Iteration
+
+Iterate over a list of values with a single loop variable.
 
 **Input:**
 
@@ -73,6 +28,8 @@ server_list:
 ```
 
 ### With Index and Value
+
+Unpack both the index position and value in a loop.
 
 **Input:**
 
@@ -103,47 +60,50 @@ items:
   - "third"
 ```
 
-### Iterating Over Objects
+### Nested For Loops
+
+Iterate over nested structures with multiple levels of loops.
 
 **Input:**
 
 ```yaml
-services:
-  - for: svc in service_configs
-    name: "${svc.name}"
-    port: ${svc.port}
-    replicas: ${svc.replicas}
-service_configs:
-  - name: "api"
-    port: 8080
-    replicas: 3
-  - name: "worker"
-    port: 9000
-    replicas: 1
+matrix:
+  - for: os in operating_systems
+    os: "${os}"
+    versions:
+      - for: version in versions_list
+        version: "${version}"
+operating_systems:
+  - "ubuntu"
+  - "windows"
+versions_list:
+  - "18.04"
+  - "20.04"
 ```
 
 **Output:**
 
 ```yaml
-services:
-  - name: "api"
-    port: 8080
-    replicas: 3
-  - name: "worker"
-    port: 9000
-    replicas: 1
-service_configs:
-  - name: "api"
-    port: 8080
-    replicas: 3
-  - name: "worker"
-    port: 9000
-    replicas: 1
+matrix:
+  - os: "ubuntu"
+    versions:
+      - version: "18.04"
+      - version: "20.04"
+  - os: "windows"
+    versions:
+      - version: "18.04"
+      - version: "20.04"
+operating_systems:
+  - "ubuntu"
+  - "windows"
+versions_list:
+  - "18.04"
+  - "20.04"
 ```
 
-### With Filter Conditions
+### For Loop with Filter Condition
 
-Combine `for:` with `if:` to filter items:
+Combine for: with if: to filter items during iteration.
 
 **Input:**
 
@@ -185,81 +145,43 @@ all_services:
     port: 6379
 ```
 
-### Nested For Loops
+### For Loop with Expressions
 
-For loops can be nested for multi-level expansion:
+Use expressions and calculations within for loop templates.
 
 **Input:**
 
 ```yaml
-matrix:
-  - for: os in operating_systems
-    os: "${os}"
-    versions:
-      - for: version in versions_list
-        version: "${version}"
-operating_systems:
-  - "ubuntu"
-  - "windows"
-versions_list:
-  - "18.04"
-  - "20.04"
+multiplier: 3
+items:
+  - for: item in [1, 2, 3, 4]
+    num: ${item}
+    tripled: ${item * multiplier}
+    combined: ${item + multiplier}
 ```
 
 **Output:**
 
 ```yaml
-matrix:
-  - os: "ubuntu"
-    versions:
-      - version: "18.04"
-      - version: "20.04"
-  - os: "windows"
-    versions:
-      - version: "18.04"
-      - version: "20.04"
-operating_systems:
-  - "ubuntu"
-  - "windows"
-versions_list:
-  - "18.04"
-  - "20.04"
+multiplier: 3
+items:
+  - num: 1
+    tripled: 3
+    combined: 4
+  - num: 2
+    tripled: 6
+    combined: 5
+  - num: 3
+    tripled: 9
+    combined: 6
+  - num: 4
+    tripled: 12
+    combined: 7
 ```
 
-### Ignoring Index or Value with Underscore
+### For Loop with Empty Array
 
-Use `_` to ignore the index or value:
-
-**Input:**
-
-```yaml
-# Ignore index, only use value
-names:
-  - for: (_, name) in ["alice", "bob", "charlie"]
-    person: "${name}"
-
-# Ignore value, only use index
-positions:
-  - for: (i, _) in ["a", "b", "c"]
-    index: ${i}
-```
-
-**Output:**
-
-```yaml
-names:
-  - person: "alice"
-  - person: "bob"
-  - person: "charlie"
-positions:
-  - index: 0
-  - index: 1
-  - index: 2
-```
-
-### Empty Array Handling
-
-Iterating over an empty array produces no output items:
+For loops over empty arrays produce no output items.
 
 **Input:**
 
@@ -274,131 +196,3 @@ items:
 ```yaml
 items: []
 ```
-
-## With Interpolation and Expressions
-
-Loop variables can be used in interpolations and expressions:
-
-**Input:**
-
-```yaml
-build_config:
-  - for: (idx, platform) in platforms
-    if: idx > 0 || !skip_first
-    platform: "${platform}"
-    artifact: "build-${platform}-v1.0.0.tar.gz"
-    size_mb: "${platform == 'arm64' ? 150 : 250}"
-platforms:
-  - "amd64"
-  - "arm64"
-  - "arm"
-skip_first: false
-```
-
-**Output:**
-
-```yaml
-build_config:
-  - platform: "amd64"
-    artifact: "build-amd64-v1.0.0.tar.gz"
-    size_mb: "250"
-  - platform: "arm64"
-    artifact: "build-arm64-v1.0.0.tar.gz"
-    size_mb: "150"
-  - platform: "arm"
-    artifact: "build-arm-v1.0.0.tar.gz"
-    size_mb: "250"
-platforms:
-  - "amd64"
-  - "arm64"
-  - "arm"
-skip_first: false
-```
-
-## Nested Structures with Complex Templates
-
-**Input:**
-
-```yaml
-environments:
-  - for: env in environment_list
-    name: "${env.name}"
-    replicas: ${env.replicas}
-    database:
-      host: "db-${env.region}.internal"
-      port: 5432
-      credentials:
-        include: "_db-credentials.yaml"
-environment_list:
-  - name: "staging"
-    region: "us-west"
-    replicas: 2
-  - name: "production"
-    region: "us-east"
-    replicas: 5
-```
-
-**Output:**
-
-```yaml
-environments:
-  - name: "staging"
-    replicas: 2
-    database:
-      host: "db-us-west.internal"
-      port: 5432
-      credentials:
-        username: "dbuser"
-        password: "secret"
-  - name: "production"
-    replicas: 5
-    database:
-      host: "db-us-east.internal"
-      port: 5432
-      credentials:
-        username: "dbuser"
-        password: "secret"
-environment_list:
-  - name: "staging"
-    region: "us-west"
-    replicas: 2
-  - name: "production"
-    region: "us-east"
-    replicas: 5
-```
-
-## Common Use Cases
-
-- **Service enumeration**: Generate config for each service/microservice
-- **Platform builds**: Create build configurations for multiple targets
-- **Environment scaling**: Define replicas or resources for different environments
-- **Batch operations**: Generate similar structures with variations
-- **Test matrices**: Create combinations of parameters
-
-## Edge Cases and Special Behavior
-
-### Quoted vs Unquoted Syntax
-
-Both quoted and unquoted syntax are supported:
-
-```yaml
-# Quoted (recommended)
-- for: "item in items_list"
-
-# Unquoted (also valid)
-- for: item in items_list
-```
-
-### Variable Source
-
-The source array can be:
-- A variable reference: `for: item in items`
-- A literal array: `for: item in ["a", "b", "c"]`
-- From nested paths: `for: item in config.services` (if available in scope)
-
-### Order of Evaluation
-
-Loop variables are available:
-1. In field values via interpolation: `"${item}"`
-2. In conditional expressions: `if: item.enabled`
-3. In nested structures created during that iteration

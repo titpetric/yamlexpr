@@ -1,0 +1,23 @@
+---
+title: "Expression Interpolation"
+description: "Evaluate expressions and calculations within `${}` syntax."
+category: "advanced"
+tags: ["interpolation", "expression", "calculation"]
+---
+base_price: 100
+discount_percent: 15
+quantity: 5
+pricing:
+  unit_price: "${base_price}"
+  discount_amount: "${base_price * discount_percent / 100}"
+  total: "${(base_price * (100 - discount_percent) / 100) * quantity}"
+  summary: "Total for ${quantity} units: ${(base_price * (100 - discount_percent) / 100) * quantity}"
+---
+base_price: 100
+discount_percent: 15
+quantity: 5
+pricing:
+  unit_price: "100"
+  discount_amount: "15"
+  total: "425"
+  summary: "Total for 5 units: 425"

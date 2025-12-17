@@ -11,11 +11,16 @@ vars:
 
 tasks:
   default:
-    desc: "Run the playground server"
+    desc: "Run the yamlexpr everything"
     cmds:
-      - task: fmt
+      - task: build
+      - task: generate
       - task: lint
-      - go build -o bin/ ./cmd/yamlexpr
+      - task: test
+      - task: cover
+
+  build:
+    cmd: go build -o bin/ ./cmd/yamlexpr
 
   fmt:
     desc: "Format code and tidy dependencies"
@@ -43,7 +48,7 @@ tasks:
   lint:godoc:
     desc: "Lint godoc comments"
     cmds:
-      - schema-gen extract --pretty-json
+      - schema-gen extract ./... --pretty-json
       - schema-gen lint --summary
 
   test:
@@ -85,11 +90,10 @@ tasks:
 
   generate:
     desc: "Generate documentation from templates"
-    dir: docs/features
     cmds:
-      - bash for-loops.md.sh > for-loops.md
-      - bash conditionals.md.sh > conditionals.md
-      - bash matrix.md.sh > matrix.md
-      - bash include.md.sh > include.md
-      - bash interpolation.md.sh > interpolation.md
-      - bash document-expansion.md.sh > document-expansion.md
+      - ./bin/yamlexpr gen -feature for-loops > docs/features/for-loops.md
+      - ./bin/yamlexpr gen -feature conditionals > docs/features/conditionals.md
+      - ./bin/yamlexpr gen -feature include > docs/features/include.md
+      - ./bin/yamlexpr gen -feature interpolation > docs/features/interpolation.md
+      - ./bin/yamlexpr gen -feature matrix > docs/features/matrix.md
+      - ./bin/yamlexpr gen -feature document-expansion > docs/features/document-expansion.md

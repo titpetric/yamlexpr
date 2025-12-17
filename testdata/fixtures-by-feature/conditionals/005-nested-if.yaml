@@ -1,0 +1,25 @@
+---
+title: "Nested If Conditions"
+description: "If conditions can be nested at multiple levels."
+category: "advanced"
+tags: ["if", "nested", "advanced"]
+---
+debug_enabled: true
+detailed_logging: true
+config:
+  logging:
+    if: ${debug_enabled}
+    level: "debug"
+    verbose:
+      if: ${detailed_logging}
+      include_timestamps: true
+      include_caller: true
+---
+debug_enabled: true
+detailed_logging: true
+config:
+  logging:
+    level: "debug"
+    verbose:
+      include_timestamps: true
+      include_caller: true

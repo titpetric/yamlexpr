@@ -1,0 +1,11 @@
+---
+title: "For Loop with Empty Array"
+description: "For loops over empty arrays produce no output items."
+category: "edge-cases"
+tags: ["for", "empty", "edge-case"]
+---
+items:
+  - for: item in []
+    value: "${item}"
+---
+items: []

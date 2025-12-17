@@ -1,0 +1,26 @@
+---
+title: "With Index and Value"
+description: "Unpack both the index position and value in a loop."
+category: "basics"
+tags: ["for", "index", "tuple-unpacking"]
+---
+indexed_items:
+  - for: (idx, item) in items
+    index: ${idx}
+    value: "${item}"
+items:
+  - "first"
+  - "second"
+  - "third"
+---
+indexed_items:
+  - index: 0
+    value: "first"
+  - index: 1
+    value: "second"
+  - index: 2
+    value: "third"
+items:
+  - "first"
+  - "second"
+  - "third"

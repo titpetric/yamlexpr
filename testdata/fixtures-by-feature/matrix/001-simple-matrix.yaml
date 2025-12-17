@@ -1,0 +1,17 @@
+title: "Simple matrix"
+description: "A top level matrix will produce multiple documents for iteration."
+---
+matrix:
+  os: [linux]
+  arch: [x86_64, arm64]
+  version: [18, 20]
+
+name: "${os}-${arch}-v${version}"
+---
+name: "linux-x86-18"
+---
+name: "linux-arm64-18"
+---
+name: "linux-x86-20
+---
+name: "linux-arm64-20"

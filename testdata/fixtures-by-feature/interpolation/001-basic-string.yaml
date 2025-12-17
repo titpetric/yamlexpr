@@ -1,0 +1,13 @@
+---
+title: "Basic String Interpolation"
+description: "Interpolate variable values into strings using `${}` syntax."
+category: "basics"
+tags: ["interpolation", "string", "variable"]
+---
+name: "World"
+greeting: "Hello ${name}"
+message: "Welcome back, ${name}!"
+---
+name: "World"
+greeting: "Hello World"
+message: "Welcome back, World!"

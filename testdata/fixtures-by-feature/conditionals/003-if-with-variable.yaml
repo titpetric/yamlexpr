@@ -1,0 +1,21 @@
+---
+title: "If with Variable Reference"
+description: "Use variables from the context in if conditions."
+category: "basics"
+tags: ["if", "variable", "reference"]
+---
+environment: "production"
+config:
+  backup:
+    if: ${environment == "production"}
+    enabled: true
+    retention_days: 30
+  debug:
+    if: ${environment == "development"}
+    enabled: true
+---
+environment: "production"
+config:
+  backup:
+    enabled: true
+    retention_days: 30

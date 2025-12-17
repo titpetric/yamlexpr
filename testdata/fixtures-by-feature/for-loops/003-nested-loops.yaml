@@ -1,0 +1,34 @@
+---
+title: "Nested For Loops"
+description: "Iterate over nested structures with multiple levels of loops."
+category: "advanced"
+tags: ["for", "nested", "advanced"]
+---
+matrix:
+  - for: os in operating_systems
+    os: "${os}"
+    versions:
+      - for: version in versions_list
+        version: "${version}"
+operating_systems:
+  - "ubuntu"
+  - "windows"
+versions_list:
+  - "18.04"
+  - "20.04"
+---
+matrix:
+  - os: "ubuntu"
+    versions:
+      - version: "18.04"
+      - version: "20.04"
+  - os: "windows"
+    versions:
+      - version: "18.04"
+      - version: "20.04"
+operating_systems:
+  - "ubuntu"
+  - "windows"
+versions_list:
+  - "18.04"
+  - "20.04"

@@ -1,0 +1,27 @@
+---
+title: "Multiple Interpolations"
+description: "Multiple variables and expressions in a single string."
+category: "advanced"
+tags: ["interpolation", "multiple", "complex"]
+---
+first_name: "John"
+last_name: "Doe"
+version: "1.0.0"
+build_number: 42
+release_date: "2024-01-15"
+url_base: "https://example.com"
+artifact: "app-${version}-build${build_number}.tar.gz"
+full_name: "${first_name} ${last_name}"
+download_url: "${url_base}/releases/${version}/${artifact}"
+release_info: "${full_name} released ${artifact} on ${release_date}"
+---
+first_name: "John"
+last_name: "Doe"
+version: "1.0.0"
+build_number: 42
+release_date: "2024-01-15"
+url_base: "https://example.com"
+artifact: "app-1.0.0-build42.tar.gz"
+full_name: "John Doe"
+download_url: "https://example.com/releases/1.0.0/app-1.0.0-build42.tar.gz"
+release_info: "John Doe released app-1.0.0-build42.tar.gz on 2024-01-15"

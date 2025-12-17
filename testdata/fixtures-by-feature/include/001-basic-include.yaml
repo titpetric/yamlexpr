@@ -1,0 +1,18 @@
+---
+title: "Basic Include"
+description: "Include external YAML file and merge contents."
+category: "basics"
+tags: ["include", "basic", "composition"]
+---
+database:
+  host: "localhost"
+  port: 5432
+  credentials:
+    include: "_db-credentials.yaml"
+---
+database:
+  host: "localhost"
+  port: 5432
+  credentials:
+    username: "dbuser"
+    password: "secret123"

@@ -1,0 +1,24 @@
+---
+title: "Include in For Loop"
+description: "Use includes within for loop templates to compose repeated sections."
+category: "advanced"
+tags: ["include", "for", "composition"]
+---
+environments:
+  - for: env in ["staging", "production"]
+    name: "${env}"
+    database:
+      credentials:
+        include: "_db-credentials.yaml"
+---
+environments:
+  - name: "staging"
+    database:
+      credentials:
+        username: "dbuser"
+        password: "secret123"
+  - name: "production"
+    database:
+      credentials:
+        username: "dbuser"
+        password: "secret123"

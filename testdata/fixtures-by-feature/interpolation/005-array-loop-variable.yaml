@@ -1,0 +1,30 @@
+---
+title: "Interpolation in For Loops"
+description: "Interpolate loop variables and context values within for loop templates."
+category: "advanced"
+tags: ["interpolation", "for", "loop-variable"]
+---
+namespace: "production"
+replicas: 3
+services:
+  - for: service in ["api", "worker", "cache"]
+    name: "${service}"
+    image: "myrepo/${service}:latest"
+    replicas: ${replicas}
+    full_name: "${namespace}-${service}"
+---
+namespace: "production"
+replicas: 3
+services:
+  - name: "api"
+    image: "myrepo/api:latest"
+    replicas: 3
+    full_name: "production-api"
+  - name: "worker"
+    image: "myrepo/worker:latest"
+    replicas: 3
+    full_name: "production-worker"
+  - name: "cache"
+    image: "myrepo/cache:latest"
+    replicas: 3
+    full_name: "production-cache"

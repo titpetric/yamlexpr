@@ -1,0 +1,15 @@
+---
+title: "If Condition False"
+description: "When if: evaluates to false, the block is omitted from output."
+category: "basics"
+tags: ["if", "false", "conditional"]
+---
+config:
+  debug:
+    if: false
+    enabled: true
+    level: "verbose"
+  production: true
+---
+config:
+  production: true

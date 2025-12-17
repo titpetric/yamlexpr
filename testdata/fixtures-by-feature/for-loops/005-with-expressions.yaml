@@ -1,0 +1,27 @@
+---
+title: "For Loop with Expressions"
+description: "Use expressions and calculations within for loop templates."
+category: "advanced"
+tags: ["for", "expression", "calculation"]
+---
+multiplier: 3
+items:
+  - for: item in [1, 2, 3, 4]
+    num: ${item}
+    tripled: ${item * multiplier}
+    combined: ${item + multiplier}
+---
+multiplier: 3
+items:
+  - num: 1
+    tripled: 3
+    combined: 4
+  - num: 2
+    tripled: 6
+    combined: 5
+  - num: 3
+    tripled: 9
+    combined: 6
+  - num: 4
+    tripled: 12
+    combined: 7

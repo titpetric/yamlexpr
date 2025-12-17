@@ -1,0 +1,20 @@
+---
+title: "Multiple Includes"
+description: "Include multiple files to compose configuration from parts."
+category: "basics"
+tags: ["include", "multiple", "composition"]
+---
+metadata:
+  include: "_common-labels.yaml"
+database:
+  credentials:
+    include: "_db-credentials.yaml"
+---
+metadata:
+  app: "myapp"
+  version: "1.0.0"
+  managed_by: "yamlexpr"
+database:
+  credentials:
+    username: "dbuser"
+    password: "secret123"

@@ -1,0 +1,22 @@
+---
+title: "Simple Value Iteration"
+description: "Iterate over a list of values with a single loop variable."
+category: "basics"
+tags: ["for", "iteration", "simple"]
+---
+servers:
+  - for: server in server_list
+    name: "${server}"
+server_list:
+  - "api"
+  - "worker"
+  - "cache"
+---
+servers:
+  - name: "api"
+  - name: "worker"
+  - name: "cache"
+server_list:
+  - "api"
+  - "worker"
+  - "cache"
