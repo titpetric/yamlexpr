@@ -9,16 +9,8 @@ import (
 ## Types
 
 ```go
-// Config holds configuration options for the Expr evaluator.
-type Config struct {
-	// syntax defines the directive keywords used in YAML documents
-	syntax Syntax
-}
-```
-
-```go
-// ConfigOption is a functional option for configuring an Expr instance.
-type ConfigOption func(*Config)
+// Document represents a single YAML document after processing.
+type Document map[string]any
 ```
 
 ```go
@@ -26,36 +18,6 @@ type ConfigOption func(*Config)
 type Expr struct {
 	fs     fs.FS
 	config *Config
-}
-```
-
-```go
-// ExprContext carries evaluation context and state used during YAML document processing.
-// Each Process operation gets its own ExprContext, making concurrent processing safe.
-type ExprContext struct {
-	// stack holds variable scope and data resolution
-	stack *stack.Stack
-
-	// path tracks the current location in the document (e.g., "config.database", "[0].items[1]")
-	// used for error messages and context
-	path string
-
-	// includeChain tracks the chain of included files for error context
-	includeChain []string
-}
-```
-
-```go
-// ExprContextOptions holds configurable options for a new ExprContext.
-type ExprContextOptions struct {
-	// Stack is the resolver stack for variable lookups.
-	Stack *stack.Stack
-
-	// Path is the initial path in the document (defaults to "").
-	Path string
-
-	// IncludeChain is the initial chain of included files.
-	IncludeChain []string
 }
 ```
 
@@ -71,56 +33,64 @@ type ForLoopExpr struct {
 ```
 
 ```go
-// Syntax defines the directive keywords used in YAML documents.
-// Empty fields retain their default values when merged with defaults.
-type Syntax struct {
-	// If is the directive keyword for conditional blocks (default: "if")
-	If string `json:"if" yaml:"if"`
-	// For is the directive keyword for iteration blocks (default: "for")
-	For string `json:"for" yaml:"for"`
-	// Include is the directive keyword for file inclusion (default: "include")
-	Include string `json:"include" yaml:"include"`
+// MatrixDirective represents the parsed matrix configuration
+// Fields are exported for testing purposes.
+type MatrixDirective struct {
+	Dimensions map[string][]any
+	Variables  map[string]any // Non-array values to add to each job
+	Include    []map[string]any
+	Exclude    []map[string]any
 }
+```
+
+```go
+// Model type aliases.
+type (
+	// Config aliases model.Config.
+	Config = model.Config
+	// ConfigOption aliases model.ConfigOption.
+	ConfigOption = model.ConfigOption
+	// Context aliases model.Context.
+	Context = model.Context
+	// ContextOptions aliases model.ContextOptions.
+	ContextOptions = model.ContextOptions
+	// DirectiveHandler aliases model.DirectiveHandler.
+	DirectiveHandler = model.DirectiveHandler
+	// Syntax aliases model.SyntaxHandler.
+	Syntax = model.Syntax
+)
 ```
 
 ## Vars
 
 ```go
-// DefaultSyntax is the default syntax configuration with standard directive names.
-var DefaultSyntax = Syntax{
-	If:      "if",
-	For:     "for",
-	Include: "include",
-}
+// Model function/value aliases.
+var (
+	// DefaultConfig aliases model.DefaultConfig.
+	DefaultConfig = model.DefaultConfig
+	// NewContext aliases model.NewContext.
+	NewContext = model.NewContext
+	// WithFS aliases model.WithFS.
+	WithFS = model.WithFS
+	// WithSyntax aliases model.WithFS.
+	WithSyntax = model.WithSyntax
+)
 ```
 
 ## Function symbols
 
-- `func DefaultConfig () *Config`
+- `func MapMatchesSpec (m map[string]any, spec map[string]any) bool`
 - `func New (rootFS fs.FS, opts ...ConfigOption) *Expr`
-- `func NewExprContext (options *ExprContextOptions) *ExprContext`
-- `func WithSyntax (syntax Syntax) ConfigOption`
-- `func (*Config) ForDirective () string`
-- `func (*Config) IfDirective () string`
-- `func (*Config) IncludeDirective () string`
-- `func (*Expr) Load (filename string) (map[string]any, error)`
-- `func (*Expr) Process (doc any, rootVars map[string]any) (any, error)`
-- `func (*Expr) ProcessWithStack (doc any, st *stack.Stack) (any, error)`
-- `func (*ExprContext) AppendPath (segment string) *ExprContext`
-- `func (*ExprContext) FormatIncludeChain () string`
-- `func (*ExprContext) Path () string`
-- `func (*ExprContext) PopStackScope ()`
-- `func (*ExprContext) PushStackScope (m map[string]any)`
-- `func (*ExprContext) Stack () *stack.Stack`
-- `func (*ExprContext) WithInclude (filename string) *ExprContext`
-- `func (*ExprContext) WithPath (newPath string) *ExprContext`
+- `func ValuesEqual (a,b any) bool`
+- `func (*Expr) Load (filename string) ([]Document, error)`
+- `func (*Expr) Parse (doc Document) ([]Document, error)`
 
-### DefaultConfig
+### MapMatchesSpec
 
-DefaultConfig returns the default configuration with standard directive names.
+MapMatchesSpec checks if a map contains all key:value pairs from a specification map. Used for matrix include/exclude matching and other spec-based filtering. Returns true only if every key in spec exists in the map with an equal value.
 
 ```go
-func DefaultConfig() *Config
+func MapMatchesSpec(m map[string]any, spec map[string]any) bool
 ```
 
 ### New
@@ -131,150 +101,26 @@ New creates a new Expr evaluator with the given filesystem for includes. Optiona
 func New(rootFS fs.FS, opts ...ConfigOption) *Expr
 ```
 
-### NewExprContext
+### ValuesEqual
 
-NewExprContext returns an ExprContext initialized for the given options.
-
-```go
-func NewExprContext(options *ExprContextOptions) *ExprContext
-```
-
-### WithSyntax
-
-WithSyntax sets custom directive syntax, preserving defaults for empty fields. Empty string values in the Syntax struct will use the default keywords.
-
-Example:
-
-```
-e := yamlexpr.New(fs, yamlexpr.WithSyntax(yamlexpr.Syntax{
-	If:      "v-if",
-	For:     "v-for",
-	Include: "v-include",
-}))
-```
-
-Or partially customize (empty fields keep defaults):
-
-```
-e := yamlexpr.New(fs, yamlexpr.WithSyntax(yamlexpr.Syntax{
-	If:  "v-if",
-	For: "v-for",
-	// Include remains "include"
-}))
-```
+ValuesEqual checks if two values are equal, handling primitives and type coercion. Used for comparing values in matrix specs where YAML may parse numbers as float64 or int.
 
 ```go
-func WithSyntax(syntax Syntax) ConfigOption
-```
-
-### ForDirective
-
-ForDirective returns the current for directive keyword.
-
-```go
-func (*Config) ForDirective() string
-```
-
-### IfDirective
-
-IfDirective returns the current if directive keyword.
-
-```go
-func (*Config) IfDirective() string
-```
-
-### IncludeDirective
-
-IncludeDirective returns the current include directive keyword.
-
-```go
-func (*Config) IncludeDirective() string
+func ValuesEqual(a, b any) bool
 ```
 
 ### Load
 
-Load loads a YAML file and processes it with expression evaluation. Returns a map[string]any containing the processed YAML data. The filename is resolved relative to the filesystem provided to New().
+Load loads a YAML file and processes it with expression evaluation. Returns a slice of Documents. For root-level for: or similar directives, may return multiple documents. For regular documents, returns a single-item slice. The filename is resolved relative to the filesystem provided to New().
 
 ```go
-func (*Expr) Load(filename string) (map[string]any, error)
+func (*Expr) Load(filename string) ([]Document, error)
 ```
 
-### Process
+### Parse
 
-Process processes a YAML document (any) with expression evaluation. Handles for loops, if conditions, includes, and variable interpolation. Root-level keys in the document are available as variables.
-
-```go
-func (*Expr) Process(doc any, rootVars map[string]any) (any, error)
-```
-
-### ProcessWithStack
-
-ProcessWithStack processes a YAML document with a given variable stack.
+Parse processes a Document (map[string]any) with expression evaluation. Returns a slice of Documents. For root-level for: directives, may return multiple documents. For regular documents, returns a single-item slice.
 
 ```go
-func (*Expr) ProcessWithStack(doc any, st *stack.Stack) (any, error)
-```
-
-### AppendPath
-
-AppendPath appends a segment to the current path. For example, AppendPath("key") on a context with path "config" results in "config.key". AppendPath("[0]") results in "config[0]".
-
-```go
-func (*ExprContext) AppendPath(segment string) *ExprContext
-```
-
-### FormatIncludeChain
-
-FormatIncludeChain returns the include chain formatted for error messages. Example: "config.yaml -> database.yaml -> secrets.yaml"
-
-```go
-func (*ExprContext) FormatIncludeChain() string
-```
-
-### Path
-
-Path returns the current path in the document.
-
-```go
-func (*ExprContext) Path() string
-```
-
-### PopStackScope
-
-PopStackScope pops the top-most variable scope from the stack.
-
-```go
-func (*ExprContext) PopStackScope()
-```
-
-### PushStackScope
-
-PushStackScope pushes a new variable scope onto the stack. Used when entering a for loop iteration or other scoped contexts.
-
-```go
-func (*ExprContext) PushStackScope(m map[string]any)
-```
-
-### Stack
-
-Stack returns the variable resolution stack.
-
-```go
-func (*ExprContext) Stack() *stack.Stack
-```
-
-### WithInclude
-
-WithInclude returns a new context extended with a filename in the include chain. Used when processing included files to track the chain of includes.
-
-```go
-func (*ExprContext) WithInclude(filename string) *ExprContext
-```
-
-### WithPath
-
-WithPath returns a new context with the path updated. Useful for tracking location while descending into nested structures.
-
-```go
-func (*ExprContext) WithPath(newPath string) *ExprContext
+func (*Expr) Parse(doc Document) ([]Document, error)
 ```

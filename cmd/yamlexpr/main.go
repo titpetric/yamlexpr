@@ -97,13 +97,13 @@ func testFixtures() {
 
 		name := e.Name()
 
-		// Skip non-yaml files and fixtures with leading underscore
+		// Skip fixtures with leading underscore silently (helper files, not actual tests)
 		if strings.HasPrefix(name, "_") {
-			skipped++
 			continue
 		}
-		if filepath.Ext(name) != ".yaml" && filepath.Ext(name) != ".yml"{
-			skipped++
+
+		// Skip non-yaml files
+		if filepath.Ext(name) != ".yaml" && filepath.Ext(name) != ".yml" {
 			continue
 		}
 
@@ -123,11 +123,24 @@ func testFixtures() {
 			continue
 		}
 
-		// Parse input (first section)
-		var input map[string]any
-		err = yaml.Unmarshal([]byte(parts[0]), &input)
+		// Parse input (first section) - can be map or array
+		var inputDoc any
+		err = yaml.Unmarshal([]byte(parts[0]), &inputDoc)
 		if err != nil {
 			fmt.Printf("FAIL %s: error parsing input: %v\n", name, err)
+			failed++
+			continue
+		}
+
+		// Convert array input to a wrapper map
+		var input map[string]any
+		if arr, ok := inputDoc.([]any); ok {
+			// Wrap array in a temporary key for processing
+			input = map[string]any{"_items": arr}
+		} else if m, ok := inputDoc.(map[string]any); ok {
+			input = m
+		} else {
+			fmt.Printf("FAIL %s: input must be map or array, got %T\n", name, inputDoc)
 			failed++
 			continue
 		}
@@ -153,6 +166,26 @@ func testFixtures() {
 			continue
 		}
 
+		// If input was an array, unwrap the _items key from the result
+		_, isArrayInput := inputDoc.([]any)
+		var actualResults []yamlexpr.Document
+		if isArrayInput && len(docs) == 1 {
+			// Check if the result has _items key
+			if items, ok := docs[0]["_items"]; ok {
+				if itemsSlice, ok := items.([]any); ok {
+					// Convert items back to Document slice
+					for _, item := range itemsSlice {
+						if itemMap, ok := item.(map[string]any); ok {
+							actualResults = append(actualResults, yamlexpr.Document(itemMap))
+						}
+					}
+				}
+			}
+		} else {
+			// Regular map results
+			actualResults = docs
+		}
+
 		// Compare results based on number of expected documents
 		var expected any
 		var result any
@@ -160,13 +193,13 @@ func testFixtures() {
 		if len(expectedDocs) == 1 {
 			// Single expected document
 			expected = expectedDocs[0]
-			if len(docs) == 1 {
+			if len(actualResults) == 1 {
 				// Single result document
-				result = map[string]any(docs[0])
+				result = map[string]any(actualResults[0])
 			} else {
 				// Multiple result documents - convert to slice
-				resultSlice := make([]any, len(docs))
-				for i, doc := range docs {
+				resultSlice := make([]any, len(actualResults))
+				for i, doc := range actualResults {
 					resultSlice[i] = map[string]any(doc)
 				}
 				result = resultSlice
@@ -176,9 +209,9 @@ func testFixtures() {
 			expectedAny := make([]any, len(expectedDocs))
 			copy(expectedAny, expectedDocs)
 			expected = expectedAny
-			
-			resultSlice := make([]any, len(docs))
-			for i, doc := range docs {
+
+			resultSlice := make([]any, len(actualResults))
+			for i, doc := range actualResults {
 				resultSlice[i] = map[string]any(doc)
 			}
 			result = resultSlice

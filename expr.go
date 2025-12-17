@@ -46,7 +46,7 @@ func (e *Expr) Parse(doc Document) ([]Document, error) {
 
 	// Convert result (which may be []any or map[string]any) to []Document
 	var docs []Document
-	
+
 	// If result is a slice (from for/matrix directives), convert each item to Document
 	if slice, ok := result.([]any); ok {
 		for _, item := range slice {
@@ -140,7 +140,7 @@ func (e *Expr) processWithContext(ctx *Context, doc any) (any, error) {
 	}
 }
 
-// processMapWithContext processes a map with Context, handling include, for, and if directives.
+// processMapWithContext processes a map with Context, handling include, for, matrix, and if directives.
 func (e *Expr) processMapWithContext(ctx *Context, m map[string]any) (any, error) {
 	result := make(map[string]any)
 
@@ -151,6 +151,11 @@ func (e *Expr) processMapWithContext(ctx *Context, m map[string]any) (any, error
 		}
 		// Remove include from processing
 		delete(m, e.config.IncludeDirective())
+	}
+
+	// Check for matrix directive (before for, same priority)
+	if matrixExpr, ok := m[e.config.MatrixDirective()]; ok {
+		return e.handleMatrixWithContext(ctx, matrixExpr, m)
 	}
 
 	// Check for for directive
@@ -189,16 +194,29 @@ func (e *Expr) processMapWithContext(ctx *Context, m map[string]any) (any, error
 	return result, nil
 }
 
-// processSliceWithContext processes a slice with Context, handling for and if directives.
+// processSliceWithContext processes a slice with Context, handling for, matrix, and if directives.
 func (e *Expr) processSliceWithContext(ctx *Context, s []any) (any, error) {
 	result := make([]any, 0, len(s))
 
 	for i, item := range s {
 		itemCtx := ctx.AppendPath(fmt.Sprintf("[%d]", i))
 
-		// Check if item is a map with for or if directives
+		// Check if item is a map with for, matrix, or if directives
 		if m, ok := item.(map[string]any); ok {
-			// Check for for directive first (should be evaluated before if)
+			// Check for matrix directive first (should be evaluated before for and if)
+			if matrixExpr, ok := m[e.config.MatrixDirective()]; ok {
+				processed, err := e.handleMatrixWithContext(itemCtx, matrixExpr, m)
+				if err != nil {
+					return nil, err
+				}
+				// handleMatrix returns a slice, extend result
+				if slice, ok := processed.([]any); ok {
+					result = append(result, slice...)
+				}
+				continue
+			}
+
+			// Check for for directive (should be evaluated before if)
 			if forExpr, ok := m[e.config.ForDirective()]; ok {
 				processed, err := e.handleForWithContext(itemCtx, forExpr, m)
 				if err != nil {
@@ -211,7 +229,7 @@ func (e *Expr) processSliceWithContext(ctx *Context, s []any) (any, error) {
 				continue
 			}
 
-			// If no for directive, check if directive
+			// If no for or matrix directive, check if directive
 			if ifExpr, ok := m[e.config.IfDirective()]; ok {
 				// Evaluate condition
 				ok, err := evaluateConditionWithPath(ifExpr, ctx.Stack(), itemCtx.Path()+"."+e.config.IfDirective())
@@ -285,7 +303,7 @@ func (e *Expr) loadAndMergeFileWithContext(ctx *Context, filename string, result
 
 	// Recursively merge into result
 	mergeRecursive(result, processed)
-	
+
 	// Also merge into stack so included variables are available to for/if expressions
 	if processedMap, ok := processed.(map[string]any); ok {
 		for k, v := range processedMap {
@@ -293,7 +311,7 @@ func (e *Expr) loadAndMergeFileWithContext(ctx *Context, filename string, result
 			ctx.Stack().Set(k, v)
 		}
 	}
-	
+
 	return nil
 }
 

@@ -71,3 +71,58 @@ func isValidVarName(name string) bool {
 	matched, _ := regexp.MatchString(`^[a-zA-Z_]\w*$`, name)
 	return matched
 }
+
+// MapMatchesSpec checks if a map contains all key:value pairs from a specification map.
+// Used for matrix include/exclude matching and other spec-based filtering.
+// Returns true only if every key in spec exists in the map with an equal value.
+func MapMatchesSpec(m map[string]any, spec map[string]any) bool {
+	for specKey, specVal := range spec {
+		mapVal, exists := m[specKey]
+		if !exists {
+			return false
+		}
+		if !valuesEqual(mapVal, specVal) {
+			return false
+		}
+	}
+	return true
+}
+
+// ValuesEqual checks if two values are equal, handling primitives and type coercion.
+// Used for comparing values in matrix specs where YAML may parse numbers as float64 or int.
+func ValuesEqual(a, b any) bool {
+	return valuesEqual(a, b)
+}
+
+// valuesEqual is the internal implementation of value comparison.
+func valuesEqual(a, b any) bool {
+	switch av := a.(type) {
+	case string:
+		bv, ok := b.(string)
+		return ok && av == bv
+	case int:
+		// Try both int and float64 (YAML may parse as float)
+		switch bv := b.(type) {
+		case int:
+			return av == bv
+		case float64:
+			return float64(av) == bv
+		}
+		return false
+	case float64:
+		// Handle both float64 and int
+		switch bv := b.(type) {
+		case float64:
+			return av == bv
+		case int:
+			return av == float64(bv)
+		}
+		return false
+	case bool:
+		bv, ok := b.(bool)
+		return ok && av == bv
+	default:
+		// Fallback: compare string representations
+		return fmt.Sprintf("%v", a) == fmt.Sprintf("%v", b)
+	}
+}

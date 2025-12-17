@@ -187,3 +187,164 @@ func TestParseForExpr(t *testing.T) {
 		})
 	}
 }
+
+// TestMapMatchesSpec tests the MapMatchesSpec function.
+func TestMapMatchesSpec(t *testing.T) {
+	tests := []struct {
+		name    string
+		m       map[string]any
+		spec    map[string]any
+		matches bool
+	}{
+		{
+			name: "exact match",
+			m: map[string]any{
+				"os":   "linux",
+				"arch": "x86_64",
+			},
+			spec: map[string]any{
+				"os":   "linux",
+				"arch": "x86_64",
+			},
+			matches: true,
+		},
+		{
+			name: "partial spec match",
+			m: map[string]any{
+				"os":      "linux",
+				"arch":    "x86_64",
+				"version": "14",
+			},
+			spec: map[string]any{
+				"os": "linux",
+			},
+			matches: true,
+		},
+		{
+			name: "spec mismatch",
+			m: map[string]any{
+				"os":   "linux",
+				"arch": "x86_64",
+			},
+			spec: map[string]any{
+				"os": "windows",
+			},
+			matches: false,
+		},
+		{
+			name: "missing key in map",
+			m: map[string]any{
+				"os": "linux",
+			},
+			spec: map[string]any{
+				"os":   "linux",
+				"arch": "x86_64",
+			},
+			matches: false,
+		},
+		{
+			name: "type coercion int to float",
+			m: map[string]any{
+				"os":      "linux",
+				"version": float64(14),
+			},
+			spec: map[string]any{
+				"version": 14,
+			},
+			matches: true,
+		},
+		{
+			name: "empty spec always matches",
+			m: map[string]any{
+				"os": "linux",
+			},
+			spec:    map[string]any{},
+			matches: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := MapMatchesSpec(tt.m, tt.spec)
+			require.Equal(t, tt.matches, result)
+		})
+	}
+}
+
+// TestValuesEqual tests the ValuesEqual function.
+func TestValuesEqual(t *testing.T) {
+	tests := []struct {
+		name  string
+		a     any
+		b     any
+		equal bool
+	}{
+		{
+			name:  "string equality",
+			a:     "linux",
+			b:     "linux",
+			equal: true,
+		},
+		{
+			name:  "string inequality",
+			a:     "linux",
+			b:     "windows",
+			equal: false,
+		},
+		{
+			name:  "int equality",
+			a:     14,
+			b:     14,
+			equal: true,
+		},
+		{
+			name:  "int to float coercion",
+			a:     14,
+			b:     float64(14),
+			equal: true,
+		},
+		{
+			name:  "float equality",
+			a:     14.0,
+			b:     14.0,
+			equal: true,
+		},
+		{
+			name:  "float to int coercion",
+			a:     float64(14),
+			b:     14,
+			equal: true,
+		},
+		{
+			name:  "bool equality",
+			a:     true,
+			b:     true,
+			equal: true,
+		},
+		{
+			name:  "bool inequality",
+			a:     true,
+			b:     false,
+			equal: false,
+		},
+		{
+			name:  "different types",
+			a:     14,
+			b:     "14",
+			equal: false,
+		},
+		{
+			name:  "nil vs nil",
+			a:     nil,
+			b:     nil,
+			equal: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := ValuesEqual(tt.a, tt.b)
+			require.Equal(t, tt.equal, result)
+		})
+	}
+}
