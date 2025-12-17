@@ -1,3 +1,6 @@
+---
+title: "A yaml document without yamlexpr extensions."
+---
 config:
   name: "myapp"
   debug: true

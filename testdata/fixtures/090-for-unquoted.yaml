@@ -1,3 +1,6 @@
+---
+title: "TODO"
+---
 items: ["apple", "banana", "cherry"]
 output:
    - for: item in items

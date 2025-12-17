@@ -59,6 +59,7 @@ tasks:
       GOTOOLCHAIN: '{{.toolchain}}'
     cmds:
       - go test -failfast -count=1 -cover -coverpkg=./... -coverprofile=pkg.cov ./...
+      - go run ./cmd/yamlexpr test
 
   cover:
     desc: "Show source coverage"

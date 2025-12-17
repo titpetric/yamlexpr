@@ -13,7 +13,7 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | Status | Package                          | Coverage | Cognitive | Lines |
 |--------|----------------------------------|----------|-----------|-------|
 | ✅     | titpetric/yamlexpr               | 85.59%   | 373       | 1079  |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | 0.00%    | 153       | 646   |
+| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | 5.22%    | 161       | 655   |
 | ✅     | titpetric/yamlexpr/interpolation | 80.47%   | 88        | 290   |
 | ❌     | titpetric/yamlexpr/model         | 70.33%   | 24        | 191   |
 | ❌     | titpetric/yamlexpr/stack         | 79.10%   | 156       | 582   |
@@ -75,10 +75,10 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ❌     | titpetric/yamlexpr/cmd/yamlexpr  | generateDocsForFeature                         | 0.00%    | 1         |
 | ✅     | titpetric/yamlexpr/cmd/yamlexpr  | generateJSONDocs                               | 0.00%    | 0         |
 | ❌     | titpetric/yamlexpr/cmd/yamlexpr  | generateMarkdownDocs                           | 0.00%    | 1         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | generateMarkdownDocsInternal                   | 0.00%    | 19        |
+| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | generateMarkdownDocsInternal                   | 0.00%    | 27        |
 | ❌     | titpetric/yamlexpr/cmd/yamlexpr  | main                                           | 0.00%    | 1         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | parseFixture                                   | 0.00%    | 3         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | parseFixtureDoc                                | 0.00%    | 11        |
+| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | parseFixture                                   | 90.00%   | 3         |
+| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | parseFixtureDoc                                | 66.70%   | 11        |
 | ✅     | titpetric/yamlexpr/cmd/yamlexpr  | printUsage                                     | 0.00%    | 0         |
 | ❌     | titpetric/yamlexpr/cmd/yamlexpr  | runFixtureTests                                | 0.00%    | 16        |
 | ❌     | titpetric/yamlexpr/cmd/yamlexpr  | start                                          | 0.00%    | 9         |

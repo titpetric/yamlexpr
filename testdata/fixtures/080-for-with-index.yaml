@@ -1,3 +1,6 @@
+---
+title: "TODO"
+---
 products: ["apple", "banana", "cherry"]
 items:
    - for: (idx, item) in products

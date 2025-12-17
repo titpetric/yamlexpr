@@ -1,4 +1,4 @@
-### Basic Include
+## Basic Include
 
 Include external YAML file and merge contents.
 
@@ -23,7 +23,7 @@ database:
     password: "secret123"
 ```
 
-### Multiple Includes
+## Multiple Includes
 
 Include multiple files to compose configuration from parts.
 
@@ -50,7 +50,7 @@ database:
     password: "secret123"
 ```
 
-### Include in For Loop
+## Include in For Loop
 
 Use includes within for loop templates to compose repeated sections.
 

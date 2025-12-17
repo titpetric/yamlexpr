@@ -1,3 +1,6 @@
+---
+title: "TODO"
+---
 include: "_items-list.yaml"
 catalog:
    - for: item in items

@@ -1,0 +1,25 @@
+title: "Simple matrix"
+description: "When a matrix is used in a list item, the values of the iteration are carried forward."
+---
+- matrix:
+    os: [linux]
+    arch: [x86_64, arm64]
+    version: [18, 20]
+  name: "${os}-${arch}-v${version}"
+---
+- name: "linux-x86-18"
+  os: "linux"
+  arch: "x86_64"
+  version: 18
+- name: "linux-arm64-18"
+  os: "linux"
+  arch: "arm64"
+  version: 18
+- name: "linux-x86-20
+  os: "linux"
+  arch: "x86"
+  version: 20
+- name: "linux-arm64-20"
+  os: "linux"
+  arch: "arm64"
+  version: 20

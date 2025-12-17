@@ -1,4 +1,4 @@
-### If Condition True
+## If Condition True
 
 When if: evaluates to true, the block is included in output.
 
@@ -21,7 +21,7 @@ config:
     level: "verbose"
 ```
 
-### If Condition False
+## If Condition False
 
 When if: evaluates to false, the block is omitted from output.
 
@@ -43,7 +43,7 @@ config:
   production: true
 ```
 
-### If with Variable Reference
+## If with Variable Reference
 
 Use variables from the context in if conditions.
 
@@ -71,7 +71,7 @@ config:
     retention_days: 30
 ```
 
-### If Condition with For Loop
+## If Condition with For Loop
 
 Combine if: and for: to conditionally filter items during iteration.
 
@@ -95,7 +95,7 @@ active_ports:
     number: 443
 ```
 
-### Nested If Conditions
+## Nested If Conditions
 
 If conditions can be nested at multiple levels.
 

@@ -1,4 +1,4 @@
-### Basic String Interpolation
+## Basic String Interpolation
 
 Interpolate variable values into strings using `${}` syntax.
 
@@ -18,7 +18,7 @@ greeting: "Hello World"
 message: "Welcome back, World!"
 ```
 
-### Nested Path Interpolation
+## Nested Path Interpolation
 
 Access nested object properties with dot notation in interpolation.
 
@@ -50,7 +50,7 @@ messages:
   about: "alice is a Engineer"
 ```
 
-### Expression Interpolation
+## Expression Interpolation
 
 Evaluate expressions and calculations within `${}` syntax.
 
@@ -80,7 +80,7 @@ pricing:
   summary: "Total for 5 units: 425"
 ```
 
-### Multiple Interpolations
+## Multiple Interpolations
 
 Multiple variables and expressions in a single string.
 
@@ -114,7 +114,7 @@ download_url: "https://example.com/releases/1.0.0/app-1.0.0-build42.tar.gz"
 release_info: "John Doe released app-1.0.0-build42.tar.gz on 2024-01-15"
 ```
 
-### Interpolation in For Loops
+## Interpolation in For Loops
 
 Interpolate loop variables and context values within for loop templates.
 

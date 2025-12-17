@@ -1,3 +1,6 @@
+---
+title: "TODO"
+---
 names: ["alice", "bob", "charlie"]
 output:
    - for: (_, name) in names

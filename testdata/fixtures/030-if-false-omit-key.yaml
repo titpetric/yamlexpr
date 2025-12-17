@@ -1,3 +1,6 @@
+---
+title: "Simple if statement will remove blocks if false."
+---
 config:
   name: "production"
   debug:

@@ -1,4 +1,4 @@
-### Simple Value Iteration
+## Simple Value Iteration
 
 Iterate over a list of values with a single loop variable.
 
@@ -27,7 +27,7 @@ server_list:
   - "cache"
 ```
 
-### With Index and Value
+## With Index and Value
 
 Unpack both the index position and value in a loop.
 
@@ -60,7 +60,7 @@ items:
   - "third"
 ```
 
-### Nested For Loops
+## Nested For Loops
 
 Iterate over nested structures with multiple levels of loops.
 
@@ -101,7 +101,7 @@ versions_list:
   - "20.04"
 ```
 
-### For Loop with Filter Condition
+## For Loop with Filter Condition
 
 Combine for: with if: to filter items during iteration.
 
@@ -145,7 +145,7 @@ all_services:
     port: 6379
 ```
 
-### For Loop with Expressions
+## For Loop with Expressions
 
 Use expressions and calculations within for loop templates.
 
@@ -179,7 +179,7 @@ items:
     combined: 7
 ```
 
-### For Loop with Empty Array
+## For Loop with Empty Array
 
 For loops over empty arrays produce no output items.
 
