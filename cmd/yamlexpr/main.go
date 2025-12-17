@@ -46,29 +46,33 @@ func main() {
 		}
 	}
 
-	// Parse YAML to any
-	var data any
-	err = yaml.Unmarshal(input, &data)
+	// Parse YAML to Document
+	var docMap map[string]any
+	err = yaml.Unmarshal(input, &docMap)
 	if err != nil {
 		log.Fatalf("error parsing YAML: %v", err)
 	}
 
-	// Create evaluator with standard handlers
+	// Create evaluator
 	expr := yamlexpr.New(nil)
 
 	// Process with yamlexpr
-	result, err := expr.Process(data, nil)
+	docs, err := expr.Parse(yamlexpr.Document(docMap))
 	if err != nil {
 		log.Fatalf("error evaluating: %v", err)
 	}
 
-	// Output as YAML
-	output, err := yaml.Marshal(result)
-	if err != nil {
-		log.Fatalf("error marshaling result: %v", err)
+	// Output all documents as YAML
+	for i, doc := range docs {
+		output, err := yaml.Marshal(map[string]any(doc))
+		if err != nil {
+			log.Fatalf("error marshaling result: %v", err)
+		}
+		if i > 0 {
+			fmt.Print("---\n")
+		}
+		fmt.Print(string(output))
 	}
-
-	fmt.Print(string(output))
 }
 
 // testFixtures runs all fixture tests and reports results
@@ -79,7 +83,9 @@ func testFixtures() {
 		log.Fatalf("error reading fixtures directory: %v", err)
 	}
 
-	expr := yamlexpr.New(nil)
+	// Create filesystem rooted at fixtures directory for include support
+	fixturesFS := os.DirFS(fixturesDir)
+	expr := yamlexpr.New(fixturesFS)
 	passed := 0
 	failed := 0
 	skipped := 0
@@ -96,12 +102,7 @@ func testFixtures() {
 			skipped++
 			continue
 		}
-		if strings.HasPrefix(name, "2") {
-			// Skip matrix fixtures (200+ range)
-			skipped++
-			continue
-		}
-		if filepath.Ext(name) != ".yaml" {
+		if filepath.Ext(name) != ".yaml" && filepath.Ext(name) != ".yml"{
 			skipped++
 			continue
 		}
@@ -122,8 +123,8 @@ func testFixtures() {
 			continue
 		}
 
-		// Parse input and expected
-		var input any
+		// Parse input (first section)
+		var input map[string]any
 		err = yaml.Unmarshal([]byte(parts[0]), &input)
 		if err != nil {
 			fmt.Printf("FAIL %s: error parsing input: %v\n", name, err)
@@ -131,27 +132,65 @@ func testFixtures() {
 			continue
 		}
 
-		var expected any
-		err = yaml.Unmarshal([]byte(parts[1]), &expected)
-		if err != nil {
-			fmt.Printf("FAIL %s: error parsing expected: %v\n", name, err)
-			failed++
-			continue
+		// Parse expected (all remaining sections as separate documents)
+		var expectedDocs []any
+		for i := 1; i < len(parts); i++ {
+			var doc any
+			err = yaml.Unmarshal([]byte(parts[i]), &doc)
+			if err != nil {
+				fmt.Printf("FAIL %s: error parsing expected section %d: %v\n", name, i, err)
+				failed++
+				continue
+			}
+			expectedDocs = append(expectedDocs, doc)
 		}
 
 		// Process the input
-		result, err := expr.Process(input, nil)
+		docs, err := expr.Parse(yamlexpr.Document(input))
 		if err != nil {
 			fmt.Printf("FAIL %s: error processing: %v\n", name, err)
 			failed++
 			continue
 		}
 
+		// Compare results based on number of expected documents
+		var expected any
+		var result any
+
+		if len(expectedDocs) == 1 {
+			// Single expected document
+			expected = expectedDocs[0]
+			if len(docs) == 1 {
+				// Single result document
+				result = map[string]any(docs[0])
+			} else {
+				// Multiple result documents - convert to slice
+				resultSlice := make([]any, len(docs))
+				for i, doc := range docs {
+					resultSlice[i] = map[string]any(doc)
+				}
+				result = resultSlice
+			}
+		} else {
+			// Multiple expected documents
+			expectedAny := make([]any, len(expectedDocs))
+			copy(expectedAny, expectedDocs)
+			expected = expectedAny
+			
+			resultSlice := make([]any, len(docs))
+			for i, doc := range docs {
+				resultSlice[i] = map[string]any(doc)
+			}
+			result = resultSlice
+		}
+
 		// Compare with expected
 		if !deepEqual(expected, result) {
 			fmt.Printf("FAIL %s: output mismatch\n", name)
-			fmt.Printf("  Expected: %v\n", expected)
-			fmt.Printf("  Got: %v\n", result)
+			expYAML, _ := yaml.Marshal(expected)
+			resYAML, _ := yaml.Marshal(result)
+			fmt.Printf("  Expected YAML:\n%s", string(expYAML))
+			fmt.Printf("  Got YAML:\n%s", string(resYAML))
 			failed++
 			continue
 		}
@@ -166,9 +205,10 @@ func testFixtures() {
 	}
 }
 
-// deepEqual compares two values for equality recursively
+// deepEqual compares two values for equality by re-marshaling and unmarshaling
+// to normalize their representation (especially map ordering)
 func deepEqual(a, b any) bool {
-	// Use YAML marshaling for comparison to handle floating point precision
+	// Marshal both to YAML and unmarshal back to normalize map ordering
 	aYAML, errA := yaml.Marshal(a)
 	bYAML, errB := yaml.Marshal(b)
 
@@ -176,5 +216,18 @@ func deepEqual(a, b any) bool {
 		return false
 	}
 
-	return string(aYAML) == string(bYAML)
+	// Unmarshal both back to generic format
+	var aNorm, bNorm any
+	if err := yaml.Unmarshal(aYAML, &aNorm); err != nil {
+		return false
+	}
+	if err := yaml.Unmarshal(bYAML, &bNorm); err != nil {
+		return false
+	}
+
+	// Re-marshal with sorted keys to ensure consistent comparison
+	aNormYAML, _ := yaml.Marshal(aNorm)
+	bNormYAML, _ := yaml.Marshal(bNorm)
+
+	return string(aNormYAML) == string(bNormYAML)
 }

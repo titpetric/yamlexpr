@@ -36,7 +36,8 @@ func TestDebugForWithIf(t *testing.T) {
 	st.Pop()
 
 	// Now test the full process
-	result, err := e.Process(input, nil)
+	docs, err := e.Parse(Document(input))
 	require.NoError(t, err)
-	t.Logf("Result: %v", result)
+	require.Len(t, docs, 1)
+	t.Logf("Result: %v", map[string]any(docs[0]))
 }

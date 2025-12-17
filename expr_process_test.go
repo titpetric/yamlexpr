@@ -63,8 +63,10 @@ func TestExpr_ProcessIfConditions(t *testing.T) {
 	e := New(nil)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := e.Process(tt.input, nil)
+			docs, err := e.Parse(Document(tt.input))
 			require.NoError(t, err)
+			require.Len(t, docs, 1)
+			result := map[string]any(docs[0])
 			require.Equal(t, tt.expected, result)
 		})
 	}
@@ -153,8 +155,12 @@ func TestExpr_ProcessForLoops(t *testing.T) {
 	e := New(nil)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := e.Process(tt.input, nil)
+			inputDoc, ok := tt.input.(map[string]any)
+			require.True(t, ok, "input must be map[string]any")
+			docs, err := e.Parse(Document(inputDoc))
 			require.NoError(t, err)
+			require.Len(t, docs, 1)
+			result := map[string]any(docs[0])
 			require.Equal(t, tt.expected, result)
 		})
 	}
@@ -194,8 +200,12 @@ func TestExpr_ProcessForWithIf(t *testing.T) {
 	e := New(nil)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := e.Process(tt.input, nil)
+			inputDoc, ok := tt.input.(map[string]any)
+			require.True(t, ok, "input must be map[string]any")
+			docs, err := e.Parse(Document(inputDoc))
 			require.NoError(t, err)
+			require.Len(t, docs, 1)
+			result := map[string]any(docs[0])
 			require.Equal(t, tt.expected, result)
 		})
 	}

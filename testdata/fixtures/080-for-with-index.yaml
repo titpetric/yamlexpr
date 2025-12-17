@@ -6,9 +6,9 @@ items:
 ---
 products: ["apple", "banana", "cherry"]
 items:
-  - index_str: "0"
-    value: "apple"
-  - index_str: "1"
-    value: "banana"
-  - index_str: "2"
-    value: "cherry"
+  - index_str: 0
+    value: apple
+  - index_str: 1
+    value: banana
+  - index_str: 2
+    value: cherry

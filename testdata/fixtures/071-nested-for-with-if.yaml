@@ -1,4 +1,3 @@
-# Part 1: Fixture data (project list)
 projectList:
   - name: "Project-A"
     enabled: true
@@ -16,8 +15,6 @@ projectList:
         active: true
       - name: "Data"
         active: true
----
-# Part 2: Template with for and if directives
 projects:
    - for: project in projectList
      if: project.enabled
@@ -27,9 +24,25 @@ projects:
          if: team.active
          team_name: ${team.name}
 ---
-# Part 3: Expected result (filtered output)
+projectList:
+  - name: "Project-A"
+    enabled: true
+    teams:
+      - name: "Frontend"
+        active: true
+      - name: "Backend"
+        active: false
+      - name: "QA"
+        active: true
+  - name: "Project-B"
+    enabled: false
+    teams:
+      - name: "Mobile"
+        active: true
+      - name: "Data"
+        active: true
 projects:
-  - project_name: "Project-A"
+  - project_name: Project-A
     active_teams:
-      - team_name: "Frontend"
-      - team_name: "QA"
+      - team_name: Frontend
+      - team_name: QA

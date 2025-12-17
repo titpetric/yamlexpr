@@ -5,17 +5,17 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/titpetric/yamlexpr/handlers"
+	"github.com/titpetric/yamlexpr/interpolation"
 	"github.com/titpetric/yamlexpr/stack"
 )
 
 func interpolateStringHelper(s string, st *stack.Stack) string {
-	v, _ := handlers.InterpolateString(st, s)
+	v, _ := interpolation.InterpolateString(st, s)
 	return v
 }
 
 func containsInterpolation(s string) bool {
-	return handlers.ContainsInterpolation(s)
+	return interpolation.ContainsInterpolation(s)
 }
 
 // TestInterpolateString tests the internal interpolateStringHelper function.

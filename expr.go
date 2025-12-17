@@ -8,9 +8,12 @@ import (
 	"github.com/expr-lang/expr"
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/titpetric/yamlexpr/handlers"
+	"github.com/titpetric/yamlexpr/interpolation"
 	"github.com/titpetric/yamlexpr/stack"
 )
+
+// Document represents a single YAML document after processing.
+type Document map[string]any
 
 // Expr evaluates YAML documents with variable interpolation, conditionals, and composition.
 type Expr struct {
@@ -31,26 +34,43 @@ func New(rootFS fs.FS, opts ...ConfigOption) *Expr {
 	}
 }
 
-// Process processes a YAML document (any) with expression evaluation.
-// Handles for loops, if conditions, includes, and variable interpolation.
-// Root-level keys in the document are available as variables.
-func (e *Expr) Process(doc any, rootVars map[string]any) (any, error) {
-	if rootVars == nil {
-		rootVars = make(map[string]any)
-	}
-	if rootMap, ok := doc.(map[string]any); ok {
-		for k, v := range rootMap {
-			rootVars[k] = v
-		}
+// Parse processes a Document (map[string]any) with expression evaluation.
+// Returns a slice of Documents. For root-level for: directives,
+// may return multiple documents. For regular documents, returns a single-item slice.
+func (e *Expr) Parse(doc Document) ([]Document, error) {
+	// Process the document with root-level keys as variables
+	result, err := e.process(map[string]any(doc), nil)
+	if err != nil {
+		return nil, err
 	}
 
-	return e.ProcessWithStack(doc, stack.NewStack(rootVars))
+	// Convert result (which may be []any or map[string]any) to []Document
+	var docs []Document
+	
+	// If result is a slice (from for/matrix directives), convert each item to Document
+	if slice, ok := result.([]any); ok {
+		for _, item := range slice {
+			if docMap, ok := item.(map[string]any); ok {
+				docs = append(docs, Document(docMap))
+			}
+		}
+	} else if resultMap, ok := result.(map[string]any); ok {
+		// Single document
+		docs = append(docs, Document(resultMap))
+	}
+
+	if len(docs) == 0 {
+		return nil, fmt.Errorf("expected at least one Document after processing")
+	}
+
+	return docs, nil
 }
 
 // Load loads a YAML file and processes it with expression evaluation.
-// Returns a map[string]any containing the processed YAML data.
+// Returns a slice of Documents. For root-level for: or similar directives,
+// may return multiple documents. For regular documents, returns a single-item slice.
 // The filename is resolved relative to the filesystem provided to New().
-func (e *Expr) Load(filename string) (map[string]any, error) {
+func (e *Expr) Load(filename string) ([]Document, error) {
 	data, err := fs.ReadFile(e.fs, filename)
 	if err != nil {
 		return nil, fmt.Errorf("error reading file %s: %w", filename, err)
@@ -62,23 +82,39 @@ func (e *Expr) Load(filename string) (map[string]any, error) {
 		return nil, fmt.Errorf("error parsing YAML file %s: %w", filename, err)
 	}
 
-	// Process the document
-	result, err := e.Process(parsed, nil)
+	// Convert parsed data to Document
+	docMap, ok := parsed.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("expected map[string]any from YAML file %s, got %T", filename, parsed)
+	}
+
+	// Wrap with Parse for actual processing
+	docs, err := e.Parse(Document(docMap))
 	if err != nil {
 		return nil, fmt.Errorf("error processing file %s: %w", filename, err)
 	}
 
-	// Convert to map[string]any
-	resultMap, ok := result.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("expected map[string]any after processing %s, got %T", filename, result)
-	}
-
-	return resultMap, nil
+	return docs, nil
 }
 
-// ProcessWithStack processes a YAML document with a given variable stack.
-func (e *Expr) ProcessWithStack(doc any, st *stack.Stack) (any, error) {
+// process processes a YAML document (any) with expression evaluation.
+// Handles for loops, if conditions, includes, and variable interpolation.
+// Root-level keys in the document are available as variables.
+func (e *Expr) process(doc any, rootVars map[string]any) (any, error) {
+	if rootVars == nil {
+		rootVars = make(map[string]any)
+	}
+	if rootMap, ok := doc.(map[string]any); ok {
+		for k, v := range rootMap {
+			rootVars[k] = v
+		}
+	}
+
+	return e.processWithStack(doc, stack.NewStack(rootVars))
+}
+
+// processWithStack processes a YAML document with a given variable stack.
+func (e *Expr) processWithStack(doc any, st *stack.Stack) (any, error) {
 	if st == nil {
 		st = stack.New()
 	}
@@ -96,8 +132,8 @@ func (e *Expr) processWithContext(ctx *Context, doc any) (any, error) {
 	case []any:
 		return e.processSliceWithContext(ctx, d)
 	case string:
-		// Interpolate string values with error context
-		return handlers.InterpolateStringWithContext(ctx.Stack(), d, ctx.Path())
+		// Interpolate string values with type preservation (${expr} returns native type, not string)
+		return interpolation.InterpolateValueWithContext(d, ctx.Stack(), ctx.Path())
 	default:
 		// Return primitives as-is
 		return d, nil
@@ -249,6 +285,15 @@ func (e *Expr) loadAndMergeFileWithContext(ctx *Context, filename string, result
 
 	// Recursively merge into result
 	mergeRecursive(result, processed)
+	
+	// Also merge into stack so included variables are available to for/if expressions
+	if processedMap, ok := processed.(map[string]any); ok {
+		for k, v := range processedMap {
+			// Update the stack with the processed values from include
+			ctx.Stack().Set(k, v)
+		}
+	}
+	
 	return nil
 }
 
@@ -456,7 +501,7 @@ func evaluateConditionWithPath(condition any, st *stack.Stack, path string) (boo
 
 		// Handle interpolated expressions like "${item.active}"
 		if strings.Contains(v, "${") {
-			str, err := handlers.InterpolateStringWithContext(st, v, path)
+			str, err := interpolation.InterpolateStringWithContext(st, v, path)
 			if err != nil {
 				return false, err
 			}

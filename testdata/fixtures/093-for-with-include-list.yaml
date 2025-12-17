@@ -1,5 +1,4 @@
 include: "_items-list.yaml"
----
 catalog:
    - for: item in items
      item_name: ${item.product}
@@ -7,15 +6,15 @@ catalog:
 ---
 items:
    - product: "apple"
-     price: 1.50
+     price: 1.5
    - product: "banana"
      price: 0.75
    - product: "orange"
-     price: 2.00
+     price: 2
 catalog:
-   - item_name: "apple"
-     item_price: 1.50
-   - item_name: "banana"
+   - item_name: apple
+     item_price: 1.5
+   - item_name: banana
      item_price: 0.75
-   - item_name: "orange"
-     item_price: 2.00
+   - item_name: orange
+     item_price: 2

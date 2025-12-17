@@ -1,13 +1,13 @@
-# Part 1: Fixture data (note: for/if don't require quotes)
 items: ["apple", "banana", "cherry"]
----
-# Part 2: Template with unquoted for directive
 output:
    - for: item in items
      value: ${item}
 ---
-# Part 3: Expected result
+items:
+  - apple
+  - banana
+  - cherry
 output:
-  - value: "apple"
-  - value: "banana"
-  - value: "cherry"
+  - value: apple
+  - value: banana
+  - value: cherry
