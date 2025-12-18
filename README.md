@@ -29,10 +29,7 @@ host: localhost
 port: 5432
 ```
 
-The main goals of yamlexpr is to be a lightweight data traversal engine,
-upon which new functionality can be built. It evaluates data and
-produces a deterministic plain yaml output. That output can be used
-further to provide execution pipelines, documentation and other uses.
+The main goals of yamlexpr is to be a lightweight data traversal engine, upon which new functionality can be built. It evaluates data and produces a deterministic plain yaml output. That output can be used further to provide execution pipelines, documentation and other uses.
 
 ## Features
 
@@ -44,10 +41,11 @@ further to provide execution pipelines, documentation and other uses.
 - [X] **Document Expansion**: Root-level directives create multiple output documents
 
 ### Getting Started
-- **[Tutorial](docs/tutorial.md)** - Comprehensive guide with real-world examples
+
 - **[Quick Reference](docs/features/)** - Syntax cheat sheet and common patterns
 
 ### Feature Documentation
+
 - **[Interpolation](docs/features/interpolation.md)** - Variable substitution with `${variable}` syntax
 - **[Conditionals](docs/features/conditionals.md)** - Include/exclude with `if:` directive
 - **[For Loops](docs/features/for-loops.md)** - Iterate and expand with `for:` directive
@@ -56,6 +54,7 @@ further to provide execution pipelines, documentation and other uses.
 - **[Document Expansion](docs/features/document-expansion.md)** - Root-level directives creating multiple documents
 
 ### Reference
+
 - **[Syntax Reference](docs/features/)** - Complete guide to all directives
 - **[API Reference](docs/api.md)** - Complete API documentation
 - **[Test Coverage](docs/testing-coverage.md)** - Test coverage analysis
