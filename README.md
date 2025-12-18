@@ -4,11 +4,48 @@
 
 YAML composition, interpolation, and conditional evaluation for Go.
 
-## Documentation
+## Example YAML
+
+```yaml
+matrix:                                     # Document expansion on root level
+  environment: [production, development]    # Iteration dimensions.
+
+environment: ${environment}                 # Interpolation from matrix vars.
+port: 8080
+
+services:
+  - for: service in available_services      # Loops
+    if: "${service.enabled}"                # Conditions
+    name: "${service.name}"                 # Interpolation
+    replicas: "${service.replicas}"
+
+database:
+  include: "database-${environment}.yaml"   # Composition
+```
+
+```yaml
+# database-development.yaml
+host: localhost
+port: 5432
+```
+
+The main goals of yamlexpr is to be a lightweight data traversal engine,
+upon which new functionality can be built. It evaluates data and
+produces a deterministic plain yaml output. That output can be used
+further to provide execution pipelines, documentation and other uses.
+
+## Features
+
+- [X] **Variable Interpolation**: Use `${variable.path}` syntax in string values
+- [X] **Conditionals**: Include/exclude blocks with `if:` directive
+- [X] **For Loops**: Iterate and expand templates with `for:` directive
+- [X] **Matrix Expansion**: Generate combinations with `matrix:` directive (with `exclude:` and `include:`)
+- [X] **Composition**: Include external YAML files with `include:` directive
+- [X] **Document Expansion**: Root-level directives create multiple output documents
 
 ### Getting Started
 - **[Tutorial](docs/tutorial.md)** - Comprehensive guide with real-world examples
-- **[Quick Reference](docs/features/QUICK_REFERENCE.md)** - Syntax cheat sheet and common patterns
+- **[Quick Reference](docs/features/)** - Syntax cheat sheet and common patterns
 
 ### Feature Documentation
 - **[Interpolation](docs/features/interpolation.md)** - Variable substitution with `${variable}` syntax
@@ -19,11 +56,8 @@ YAML composition, interpolation, and conditional evaluation for Go.
 - **[Document Expansion](docs/features/document-expansion.md)** - Root-level directives creating multiple documents
 
 ### Reference
-- **[Syntax Reference](docs/syntax.md)** - Complete guide to all directives
-- **[Custom Syntax Configuration](docs/custom-syntax.md)** - Configure directive keywords (Vue, Angular, or custom style)
+- **[Syntax Reference](docs/features/)** - Complete guide to all directives
 - **[API Reference](docs/api.md)** - Complete API documentation
-- **[Design Document](docs/DESIGN.md)** - Architecture and design decisions
-- **[Development Guide](docs/DEVELOPMENT.md)** - Development workflow and feature implementation
 - **[Test Coverage](docs/testing-coverage.md)** - Test coverage analysis
 
 ## Installation
@@ -108,32 +142,6 @@ func main() {
 }
 ```
 
-### Use Custom Directive Syntax
-
-```go
-// Use Vue.js-style directives
-expr := yamlexpr.New(os.DirFS("."), yamlexpr.WithSyntax(yamlexpr.Syntax{
-	If:      "v-if",
-	For:     "v-for",
-	Include: "v-include",
-	Matrix:  "v-matrix",
-}))
-
-// Now your YAML can use v-if, v-for, v-include, and v-matrix
-docs, err := expr.Load("config.yaml")
-```
-
-See [Custom Syntax Configuration](docs/custom-syntax.md) for more examples.
-
-## Features
-
-- [X] **Variable Interpolation**: Use `${variable.path}` syntax in string values
-- [X] **Conditionals**: Include/exclude blocks with `if:` directive
-- [X] **For Loops**: Iterate and expand templates with `for:` directive
-- [X] **Matrix Expansion**: Generate combinations with `matrix:` directive (with `exclude:` and `include:`)
-- [X] **Composition**: Include external YAML files with `include:` directive
-- [X] **Document Expansion**: Root-level directives create multiple output documents
-
 ## API
 
 ### Expr.Load(filename string) (map[string]any, error)
@@ -159,27 +167,4 @@ Processes a YAML document with a custom variable stack for access to additional 
 
 ```go
 result, err := expr.ProcessWithStack(yamlData, customStack)
-```
-
-## Example YAML
-
-```yaml
-# config.yaml
-environment: production
-port: 8080
-
-services:
-  - for: "service in available_services"
-    if: "${service.enabled}"
-    name: "${service.name}"
-    replicas: "${service.replicas}"
-
-database:
-  include: "database.yaml"
-```
-
-```yaml
-# database.yaml
-host: localhost
-port: 5432
 ```
