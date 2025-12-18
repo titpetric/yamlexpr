@@ -1,6 +1,9 @@
 package yamlexpr
 
-import "github.com/titpetric/yamlexpr/model"
+import (
+	"github.com/titpetric/yamlexpr/frontmatter"
+	"github.com/titpetric/yamlexpr/model"
+)
 
 // Model type aliases.
 type (
@@ -16,6 +19,8 @@ type (
 	DirectiveHandler = model.DirectiveHandler
 	// Syntax aliases model.SyntaxHandler.
 	Syntax = model.Syntax
+	// DocumentContent aliases frontmatter.DocumentContent.
+	DocumentContent = frontmatter.DocumentContent
 )
 
 // Model function/value aliases.
@@ -28,4 +33,6 @@ var (
 	WithFS = model.WithFS
 	// WithSyntax aliases model.WithFS.
 	WithSyntax = model.WithSyntax
+	// ParseDocument aliases frontmatter.ParseDocument.
+	ParseDocument = frontmatter.ParseDocument
 )

@@ -1,14 +1,14 @@
-package yamlexpr_test
+package frontmatter_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/titpetric/yamlexpr"
+	"github.com/titpetric/yamlexpr/frontmatter"
 )
 
-var ParseDocument = yamlexpr.ParseDocument
+var ParseDocument = frontmatter.ParseDocument
 
 // TestParseDocument_SimpleContent tests parsing content without frontmatter.
 func TestParseDocument_SimpleContent(t *testing.T) {

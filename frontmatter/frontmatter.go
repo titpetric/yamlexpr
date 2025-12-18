@@ -1,4 +1,4 @@
-package yamlexpr
+package frontmatter
 
 import (
 	"fmt"
@@ -15,18 +15,6 @@ type DocumentContent struct {
 	// With fixtures, the first section is the yamlexpr "template",
 	// while the remaining sections are document outputs from Parse().
 	Sections []string
-}
-
-// TrimLeadingDocumentMarker trims the leading --- from a YAML document if present.
-func TrimLeadingDocumentMarker(content string) string {
-	content = strings.TrimSpace(content)
-	if strings.HasPrefix(content, "---") {
-		// Remove the --- and the following newline if present
-		content = strings.TrimPrefix(content, "---")
-		content = strings.TrimLeft(content, "\n\r")
-		content = strings.TrimSpace(content)
-	}
-	return content
 }
 
 // ParseDocument parses a YAML document into frontmatter and sections separated by ---.
@@ -50,8 +38,13 @@ func ParseDocument(content string) (*DocumentContent, error) {
 	}
 
 	// Trim leading --- from document if present
-	content = TrimLeadingDocumentMarker(content)
 	content = strings.TrimSpace(content)
+	if strings.HasPrefix(content, "---") {
+		// Remove the --- and the following newline if present
+		content = strings.TrimPrefix(content, "---")
+		content = strings.TrimLeft(content, "\n\r")
+		content = strings.TrimSpace(content)
+	}
 
 	lines := strings.Split(content, "\n")
 	separatorCount := 0
