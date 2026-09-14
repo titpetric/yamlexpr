@@ -1,0 +1,69 @@
+#!/usr/bin/env atkins
+# Atkins CI: https://github.com/titpetric/atkins
+
+name: Yamlexpr CI pipeline
+
+vars:
+  name: yamlexpr
+
+jobs:
+  default:
+    desc: "Run the yamlexpr everything"
+    steps:
+      - task: build
+      - task: generate
+      - task: lint
+      - task: test
+      - task: cover
+
+  build:
+    desc: "Build app"
+    steps:
+      - go build -o bin/ ./cmd/yamlexpr
+
+  fmt:docs:
+    desc: "Format docs"
+    steps:
+      - task: mdox:fmt
+      - mdox fmt AGENTS.md
+
+  lint:
+    desc: "Lint codebase"
+    steps:
+      - task: go:fmt
+      - splint --fix ./... || true
+
+  test:
+    desc: "Run tests and collect coverage"
+    passthru: true
+    steps:
+      - task: go:fmt
+      - go test -failfast -count=1 -cover -coverpkg=./... -coverprofile=pkg.cov ./...
+      - go run ./cmd/yamlexpr test
+
+  cover:
+    desc: "Show source coverage"
+    steps:
+      - splint docs . > docs/api.md
+      - splint coverage --append-coverage=pkg.cov --template=docs/testing-coverage.md.tpl -v ./... > docs/testing-coverage.md
+      - perl -pi -e 's/github.com\/titpetric/titpetric/g' docs/testing-coverage.md
+      - task: fmt:docs
+
+  uncover:
+    desc: "Show uncovered source"
+    steps:
+      - uncover pkg.cov
+
+  bench:
+    desc: "Run benchmarks with multiple CPU configurations"
+    steps:
+      - task: go:fmt
+      - go test -bench=. -benchmem -cpu 1,2,4 ./...
+
+  generate:
+    desc: "Generate documentation from templates"
+    vars:
+      features: [for-loops, conditionals, include, interpolation, matrix, document-expansion]
+    steps:
+      - for: feature in features
+        run: ./bin/yamlexpr gen -feature ${{ feature }} > docs/features/${{ feature }}.md
