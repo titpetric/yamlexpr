@@ -1,6 +1,8 @@
 package model
 
-import "github.com/titpetric/yamlexpr/stack"
+import (
+	"github.com/titpetric/yamlexpr/stack"
+)
 
 // ContextOptions holds configurable options for a new Context.
 type ContextOptions struct {

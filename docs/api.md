@@ -3,15 +3,23 @@
 ```go
 import (
 	"github.com/titpetric/yamlexpr"
-}
+)
 ```
 
 ## Types
+
+<details>
+<summary><code>type Document</code></summary>
 
 ```go
 // Document represents a single YAML document after processing.
 type Document map[string]any
 ```
+
+</details>
+
+<details>
+<summary><code>type Expr</code></summary>
 
 ```go
 // Expr evaluates YAML documents with variable interpolation, conditionals, and composition.
@@ -20,6 +28,11 @@ type Expr struct {
 	config *Config
 }
 ```
+
+</details>
+
+<details>
+<summary><code>type ForLoopExpr</code></summary>
 
 ```go
 // ForLoopExpr represents a parsed for loop expression.
@@ -31,6 +44,11 @@ type ForLoopExpr struct {
 	Source string
 }
 ```
+
+</details>
+
+<details>
+<summary><code>type MatrixDirective</code></summary>
 
 ```go
 // MatrixDirective represents the parsed matrix configuration
@@ -46,6 +64,11 @@ type MatrixDirective struct {
 	Exclude []map[string]any
 }
 ```
+
+</details>
+
+<details>
+<summary><code>type Config, ConfigOption, Context, ContextOptions, DirectiveHandler, Syntax, DocumentContent</code></summary>
 
 ```go
 // Model type aliases.
@@ -67,7 +90,12 @@ type (
 )
 ```
 
+</details>
+
 ## Vars
+
+<details>
+<summary><code>var DefaultConfig, NewContext, WithFS, WithSyntax, ParseDocument</code></summary>
 
 ```go
 // Model function/value aliases.
@@ -84,6 +112,8 @@ var (
 	ParseDocument = frontmatter.ParseDocument
 )
 ```
+
+</details>
 
 ## Function symbols
 

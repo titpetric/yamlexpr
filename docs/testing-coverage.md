@@ -10,132 +10,118 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 
 ## Packages
 
-| Status | Package                          | Coverage | Cognitive | Lines |
-|--------|----------------------------------|----------|-----------|-------|
-| ✅     | titpetric/yamlexpr               | 83.46%   | 356       | 994   |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | 5.22%    | 161       | 655   |
-| ✅     | titpetric/yamlexpr/frontmatter   | 100.00%  | 17        | 79    |
-| ✅     | titpetric/yamlexpr/interpolation | 80.47%   | 88        | 290   |
-| ❌     | titpetric/yamlexpr/model         | 70.33%   | 24        | 191   |
-| ❌     | titpetric/yamlexpr/stack         | 79.10%   | 156       | 582   |
+| Status | Package       | Coverage | Cognitive | Lines |
+|--------|---------------|----------|-----------|-------|
+| ❌     | .             | 61.65%   | 356       | 924   |
+| ❌     | cmd/yamlexpr  | 0.00%    | 67        | 338   |
+| ✅     | frontmatter   | 100.00%  | 17        | 63    |
+| ❌     | interpolation | 72.39%   | 88        | 268   |
+| ❌     | model         | 46.30%   | 24        | 134   |
+| ❌     | stack         | 74.20%   | 156       | 534   |
 
 ## Functions
 
-| Status | Package                          | Function                                       | Coverage | Cognitive |
-|--------|----------------------------------|------------------------------------------------|----------|-----------|
-| ✅     | titpetric/yamlexpr               | Expr.Load                                      | 69.20%   | 4         |
-| ✅     | titpetric/yamlexpr               | Expr.Parse                                     | 92.30%   | 9         |
-| ❌     | titpetric/yamlexpr               | Expr.handleForWithContext                      | 66.10%   | 42        |
-| ❌     | titpetric/yamlexpr               | Expr.handleIncludeWithContext                  | 77.80%   | 11        |
-| ✅     | titpetric/yamlexpr               | Expr.handleMatrixWithContext                   | 88.20%   | 56        |
-| ✅     | titpetric/yamlexpr               | Expr.loadAndMergeFileWithContext               | 82.40%   | 7         |
-| ✅     | titpetric/yamlexpr               | Expr.process                                   | 100.00%  | 4         |
-| ✅     | titpetric/yamlexpr               | Expr.processMapWithContext                     | 95.80%   | 15        |
-| ✅     | titpetric/yamlexpr               | Expr.processSliceWithContext                   | 87.10%   | 40        |
-| ✅     | titpetric/yamlexpr               | Expr.processWithContext                        | 100.00%  | 1         |
-| ✅     | titpetric/yamlexpr               | Expr.processWithStack                          | 75.00%   | 1         |
-| ✅     | titpetric/yamlexpr               | MapMatchesSpec                                 | 100.00%  | 5         |
-| ✅     | titpetric/yamlexpr               | New                                            | 75.00%   | 1         |
-| ✅     | titpetric/yamlexpr               | ValuesEqual                                    | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr               | applyExcludes                                  | 100.00%  | 7         |
-| ❌     | titpetric/yamlexpr               | applyIncludes                                  | 63.20%   | 19        |
-| ❌     | titpetric/yamlexpr               | evaluateConditionWithPath                      | 54.50%   | 23        |
-| ✅     | titpetric/yamlexpr               | expandMatrixBase                               | 100.00%  | 15        |
-| ✅     | titpetric/yamlexpr               | isQuoted                                       | 100.00%  | 3         |
-| ✅     | titpetric/yamlexpr               | isTruthy                                       | 22.20%   | 1         |
-| ✅     | titpetric/yamlexpr               | isValidVarName                                 | 75.00%   | 1         |
-| ✅     | titpetric/yamlexpr               | mergeRecursive                                 | 90.90%   | 24        |
-| ✅     | titpetric/yamlexpr               | parseForExpr                                   | 95.20%   | 13        |
-| ✅     | titpetric/yamlexpr               | parseMatrixDirective                           | 90.90%   | 30        |
-| ✅     | titpetric/yamlexpr               | parseYAML                                      | 75.00%   | 1         |
-| ✅     | titpetric/yamlexpr               | quoteUnquotedComparisons                       | 84.60%   | 16        |
-| ✅     | titpetric/yamlexpr               | valuesEqual                                    | 92.90%   | 7         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | ExtractFrontmatterField                        | 0.00%    | 2         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | ExtractInput                                   | 0.00%    | 1         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | ExtractOutput                                  | 0.00%    | 2         |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | GenCommand.Help                                | 0.00%    | 0         |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | GenCommand.Name                                | 0.00%    | 0         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | GenCommand.Run                                 | 0.00%    | 1         |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | NewGenCommand                                  | 0.00%    | 0         |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | NewProcessCommand                              | 0.00%    | 0         |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | NewTestCommand                                 | 0.00%    | 0         |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | ProcessCommand.Help                            | 0.00%    | 0         |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | ProcessCommand.Name                            | 0.00%    | 0         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | ProcessCommand.Run                             | 0.00%    | 1         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | ProcessCommand.run                             | 0.00%    | 13        |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | TestCommand.Help                               | 0.00%    | 0         |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | TestCommand.Name                               | 0.00%    | 0         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | TestCommand.Run                                | 0.00%    | 1         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | TestCommand.run                                | 0.00%    | 1         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | countFixtures                                  | 0.00%    | 12        |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | generateDocs                                   | 0.00%    | 19        |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | generateDocsForFeature                         | 0.00%    | 1         |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | generateJSONDocs                               | 0.00%    | 0         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | generateMarkdownDocs                           | 0.00%    | 1         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | generateMarkdownDocsInternal                   | 0.00%    | 27        |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | main                                           | 0.00%    | 1         |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | parseFixture                                   | 90.00%   | 3         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | parseFixtureDoc                                | 66.70%   | 11        |
-| ✅     | titpetric/yamlexpr/cmd/yamlexpr  | printUsage                                     | 0.00%    | 0         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | runFixtureTests                                | 0.00%    | 16        |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | start                                          | 0.00%    | 9         |
-| ❌     | titpetric/yamlexpr/cmd/yamlexpr  | testFixture                                    | 0.00%    | 39        |
-| ✅     | titpetric/yamlexpr/frontmatter   | DocumentContent.GetFrontmatterField            | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/frontmatter   | DocumentContent.GetFrontmatterFieldWithDefault | 100.00%  | 1         |
-| ✅     | titpetric/yamlexpr/frontmatter   | ParseDocument                                  | 100.00%  | 16        |
-| ✅     | titpetric/yamlexpr/interpolation | ContainsInterpolation                          | 100.00%  | 1         |
-| ✅     | titpetric/yamlexpr/interpolation | InterpolateString                              | 81.50%   | 10        |
-| ✅     | titpetric/yamlexpr/interpolation | InterpolateStringPermissive                    | 90.00%   | 9         |
-| ❌     | titpetric/yamlexpr/interpolation | InterpolateStringWithContext                   | 64.10%   | 29        |
-| ❌     | titpetric/yamlexpr/interpolation | InterpolateValue                               | 35.30%   | 21        |
-| ✅     | titpetric/yamlexpr/interpolation | InterpolateValuePermissive                     | 100.00%  | 3         |
-| ❌     | titpetric/yamlexpr/interpolation | InterpolateValueWithContext                    | 73.30%   | 11        |
-| ✅     | titpetric/yamlexpr/interpolation | extractSingleExpression                        | 80.00%   | 2         |
-| ✅     | titpetric/yamlexpr/interpolation | isSingleInterpolation                          | 100.00%  | 2         |
-| ✅     | titpetric/yamlexpr/model         | Config.ForDirective                            | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Config.IfDirective                             | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Config.IncludeDirective                        | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Config.MatrixDirective                         | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Context.AppendPath                             | 90.90%   | 8         |
-| ✅     | titpetric/yamlexpr/model         | Context.Count                                  | 0.00%    | 0         |
-| ❌     | titpetric/yamlexpr/model         | Context.FormatIncludeChain                     | 0.00%    | 1         |
-| ✅     | titpetric/yamlexpr/model         | Context.Path                                   | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Context.Pop                                    | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Context.Push                                   | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Context.Stack                                  | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Context.WithInclude                            | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | Context.WithPath                               | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | DefaultConfig                                  | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/model         | NewContext                                     | 75.00%   | 3         |
-| ❌     | titpetric/yamlexpr/model         | WithDirectiveHandler                           | 0.00%    | 4         |
-| ✅     | titpetric/yamlexpr/model         | WithFS                                         | 0.00%    | 0         |
-| ❌     | titpetric/yamlexpr/model         | WithSyntax                                     | 0.00%    | 8         |
-| ✅     | titpetric/yamlexpr/stack         | CanDescend                                     | 100.00%  | 5         |
-| ✅     | titpetric/yamlexpr/stack         | IsSlice                                        | 100.00%  | 2         |
-| ✅     | titpetric/yamlexpr/stack         | New                                            | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/stack         | NewStack                                       | 100.00%  | 0         |
-| ✅     | titpetric/yamlexpr/stack         | NewStackWithData                               | 100.00%  | 1         |
-| ❌     | titpetric/yamlexpr/stack         | PopulateStructFields                           | 0.00%    | 17        |
-| ✅     | titpetric/yamlexpr/stack         | ResolveValue                                   | 100.00%  | 2         |
-| ✅     | titpetric/yamlexpr/stack         | SliceToAny                                     | 100.00%  | 4         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.All                                      | 85.70%   | 4         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.Copy                                     | 0.00%    | 0         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.Count                                    | 0.00%    | 0         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.ForEach                                  | 100.00%  | 12        |
-| ✅     | titpetric/yamlexpr/stack         | Stack.GetInt                                   | 73.30%   | 5         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.GetMap                                   | 100.00%  | 5         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.GetSlice                                 | 100.00%  | 3         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.GetString                                | 72.70%   | 3         |
-| ❌     | titpetric/yamlexpr/stack         | Stack.Lookup                                   | 71.40%   | 6         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.Pop                                      | 90.90%   | 6         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.Push                                     | 66.70%   | 1         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.Resolve                                  | 92.30%   | 7         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.Set                                      | 66.70%   | 1         |
-| ✅     | titpetric/yamlexpr/stack         | Stack.resolveStep                              | 100.00%  | 8         |
-| ❌     | titpetric/yamlexpr/stack         | StructToMap                                    | 0.00%    | 18        |
-| ✅     | titpetric/yamlexpr/stack         | getCachedPath                                  | 100.00%  | 2         |
-| ✅     | titpetric/yamlexpr/stack         | resolveMap                                     | 100.00%  | 1         |
-| ✅     | titpetric/yamlexpr/stack         | resolveSliceIndex                              | 100.00%  | 2         |
-| ✅     | titpetric/yamlexpr/stack         | resolveStruct                                  | 100.00%  | 6         |
-| ✅     | titpetric/yamlexpr/stack         | resolveValueRecursive                          | 88.90%   | 4         |
-| ✅     | titpetric/yamlexpr/stack         | splitPathImpl                                  | 85.40%   | 31        |
+| Status | Package       | Function                                       | Coverage | Cognitive |
+|--------|---------------|------------------------------------------------|----------|-----------|
+| ✅     | .             | Expr.Load                                      | 69.23%   | 4         |
+| ❌     |               | Expr.Parse                                     | 69.23%   | 9         |
+| ❌     |               | Expr.handleForWithContext                      | 48.21%   | 42        |
+| ❌     |               | Expr.handleIncludeWithContext                  | 22.22%   | 11        |
+| ❌     |               | Expr.handleMatrixWithContext                   | 0.00%    | 56        |
+| ❌     |               | Expr.loadAndMergeFileWithContext               | 11.76%   | 7         |
+| ✅     |               | Expr.process                                   | 100.00%  | 4         |
+| ✅     |               | Expr.processMapWithContext                     | 87.50%   | 15        |
+| ❌     |               | Expr.processSliceWithContext                   | 67.74%   | 40        |
+| ✅     |               | Expr.processWithContext                        | 100.00%  | 1         |
+| ✅     |               | Expr.processWithStack                          | 75.00%   | 1         |
+| ✅     |               | MapMatchesSpec                                 | 100.00%  | 5         |
+| ✅     |               | New                                            | 75.00%   | 1         |
+| ✅     |               | ValuesEqual                                    | 100.00%  | 0         |
+| ✅     |               | applyExcludes                                  | 100.00%  | 7         |
+| ❌     |               | applyIncludes                                  | 63.16%   | 19        |
+| ❌     |               | evaluateConditionWithPath                      | 54.55%   | 23        |
+| ✅     |               | expandMatrixBase                               | 100.00%  | 15        |
+| ✅     |               | isQuoted                                       | 100.00%  | 3         |
+| ✅     |               | isTruthy                                       | 22.22%   | 1         |
+| ✅     |               | isValidVarName                                 | 75.00%   | 1         |
+| ✅     |               | mergeRecursive                                 | 90.91%   | 24        |
+| ✅     |               | parseForExpr                                   | 95.24%   | 13        |
+| ✅     |               | parseMatrixDirective                           | 90.91%   | 30        |
+| ✅     |               | parseYAML                                      | 75.00%   | 1         |
+| ✅     |               | quoteUnquotedComparisons                       | 84.62%   | 16        |
+| ✅     |               | valuesEqual                                    | 92.86%   | 7         |
+| ✅     | cmd/yamlexpr  | GenCommand.Help                                | 0.00%    | 0         |
+| ❌     |               | GenCommand.Run                                 | 0.00%    | 10        |
+| ✅     |               | NewGenCommand                                  | 0.00%    | 0         |
+| ✅     |               | NewProcessCommand                              | 0.00%    | 0         |
+| ✅     |               | NewTestCommand                                 | 0.00%    | 0         |
+| ✅     |               | ProcessCommand.Help                            | 0.00%    | 0         |
+| ❌     |               | ProcessCommand.Run                             | 0.00%    | 8         |
+| ❌     |               | ProcessCommand.processStdin                    | 0.00%    | 3         |
+| ✅     |               | TestCommand.Help                               | 0.00%    | 0         |
+| ❌     |               | TestCommand.Run                                | 0.00%    | 12        |
+| ❌     |               | main                                           | 0.00%    | 1         |
+| ✅     |               | printUsage                                     | 0.00%    | 0         |
+| ❌     |               | renderFixture                                  | 0.00%    | 7         |
+| ❌     |               | runFixture                                     | 0.00%    | 12        |
+| ❌     |               | start                                          | 0.00%    | 9         |
+| ❌     |               | writeDocuments                                 | 0.00%    | 5         |
+| ✅     | frontmatter   | DocumentContent.GetFrontmatterField            | 100.00%  | 0         |
+| ✅     |               | DocumentContent.GetFrontmatterFieldWithDefault | 100.00%  | 1         |
+| ✅     |               | ParseDocument                                  | 100.00%  | 16        |
+| ✅     | interpolation | ContainsInterpolation                          | 100.00%  | 1         |
+| ✅     |               | InterpolateString                              | 81.48%   | 10        |
+| ✅     |               | InterpolateStringPermissive                    | 90.00%   | 9         |
+| ❌     |               | InterpolateStringWithContext                   | 64.10%   | 29        |
+| ❌     |               | InterpolateValue                               | 35.29%   | 21        |
+| ✅     |               | InterpolateValuePermissive                     | 100.00%  | 3         |
+| ❌     |               | InterpolateValueWithContext                    | 73.33%   | 11        |
+| ✅     |               | extractSingleExpression                        | 80.00%   | 2         |
+| ✅     |               | isSingleInterpolation                          | 100.00%  | 2         |
+| ✅     | model         | Config.ForDirective                            | 100.00%  | 0         |
+| ✅     |               | Config.IfDirective                             | 100.00%  | 0         |
+| ✅     |               | Config.IncludeDirective                        | 100.00%  | 0         |
+| ✅     |               | Config.MatrixDirective                         | 100.00%  | 0         |
+| ✅     |               | Context.AppendPath                             | 81.82%   | 8         |
+| ✅     |               | Context.Count                                  | 0.00%    | 0         |
+| ❌     |               | Context.FormatIncludeChain                     | 0.00%    | 1         |
+| ✅     |               | Context.Path                                   | 100.00%  | 0         |
+| ✅     |               | Context.Pop                                    | 100.00%  | 0         |
+| ✅     |               | Context.Push                                   | 100.00%  | 0         |
+| ✅     |               | Context.Stack                                  | 100.00%  | 0         |
+| ✅     |               | Context.WithInclude                            | 0.00%    | 0         |
+| ✅     |               | Context.WithPath                               | 100.00%  | 0         |
+| ✅     |               | DefaultConfig                                  | 100.00%  | 0         |
+| ✅     |               | NewContext                                     | 75.00%   | 3         |
+| ❌     |               | WithDirectiveHandler                           | 0.00%    | 4         |
+| ✅     |               | WithFS                                         | 0.00%    | 0         |
+| ❌     |               | WithSyntax                                     | 0.00%    | 8         |
+| ✅     | stack         | CanDescend                                     | 100.00%  | 5         |
+| ✅     |               | IsSlice                                        | 100.00%  | 2         |
+| ✅     |               | New                                            | 100.00%  | 0         |
+| ✅     |               | NewStack                                       | 100.00%  | 0         |
+| ✅     |               | NewStackWithData                               | 100.00%  | 1         |
+| ❌     |               | PopulateStructFields                           | 0.00%    | 17        |
+| ✅     |               | ResolveValue                                   | 100.00%  | 2         |
+| ✅     |               | SliceToAny                                     | 100.00%  | 4         |
+| ✅     |               | Stack.All                                      | 85.71%   | 4         |
+| ✅     |               | Stack.Copy                                     | 0.00%    | 0         |
+| ✅     |               | Stack.Count                                    | 0.00%    | 0         |
+| ✅     |               | Stack.ForEach                                  | 100.00%  | 12        |
+| ✅     |               | Stack.GetInt                                   | 73.33%   | 5         |
+| ✅     |               | Stack.GetMap                                   | 100.00%  | 5         |
+| ✅     |               | Stack.GetSlice                                 | 100.00%  | 3         |
+| ✅     |               | Stack.GetString                                | 72.73%   | 3         |
+| ❌     |               | Stack.Lookup                                   | 71.43%   | 6         |
+| ✅     |               | Stack.Pop                                      | 90.91%   | 6         |
+| ✅     |               | Stack.Push                                     | 66.67%   | 1         |
+| ✅     |               | Stack.Resolve                                  | 92.31%   | 7         |
+| ✅     |               | Stack.Set                                      | 66.67%   | 1         |
+| ✅     |               | Stack.resolveStep                              | 100.00%  | 8         |
+| ❌     |               | StructToMap                                    | 0.00%    | 18        |
+| ✅     |               | getCachedPath                                  | 100.00%  | 2         |
+| ✅     |               | resolveMap                                     | 100.00%  | 1         |
+| ✅     |               | resolveSliceIndex                              | 100.00%  | 2         |
+| ✅     |               | resolveStruct                                  | 100.00%  | 6         |
+| ✅     |               | resolveValueRecursive                          | 88.89%   | 4         |
+| ✅     |               | splitPathImpl                                  | 85.37%   | 31        |

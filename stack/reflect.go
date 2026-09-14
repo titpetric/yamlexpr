@@ -20,7 +20,7 @@ func ResolveValue(v any, fieldName string) (any, bool) {
 
 func resolveValueRecursive(rv reflect.Value, fieldName string) (any, bool) {
 	// Dereference pointers
-	for rv.Kind() == reflect.Ptr {
+	for rv.Kind() == reflect.Pointer {
 		if rv.IsNil() {
 			return nil, false
 		}
@@ -94,7 +94,7 @@ func CanDescend(v any) bool {
 	}
 
 	rv := reflect.ValueOf(v)
-	for rv.Kind() == reflect.Ptr {
+	for rv.Kind() == reflect.Pointer {
 		if rv.IsNil() {
 			return false
 		}
@@ -119,7 +119,7 @@ func StructToMap(data any) map[string]any {
 
 	rv := reflect.ValueOf(data)
 	// Dereference pointers
-	for rv.Kind() == reflect.Ptr {
+	for rv.Kind() == reflect.Pointer {
 		if rv.IsNil() {
 			return result
 		}
@@ -152,7 +152,7 @@ func StructToMap(data any) map[string]any {
 		fieldValue := fv.Interface()
 
 		// Recursively convert nested structs
-		if fv.Kind() == reflect.Struct || (fv.Kind() == reflect.Ptr && fv.Type().Elem().Kind() == reflect.Struct) {
+		if fv.Kind() == reflect.Struct || (fv.Kind() == reflect.Pointer && fv.Type().Elem().Kind() == reflect.Struct) {
 			fieldValue = StructToMap(fieldValue)
 		}
 
@@ -170,7 +170,7 @@ func PopulateStructFields(m map[string]any, data any) {
 
 	rv := reflect.ValueOf(data)
 	// Dereference pointers
-	for rv.Kind() == reflect.Ptr {
+	for rv.Kind() == reflect.Pointer {
 		if rv.IsNil() {
 			return
 		}
@@ -203,7 +203,7 @@ func PopulateStructFields(m map[string]any, data any) {
 		fieldValue := fv.Interface()
 
 		// Convert nested structs to maps so they can be accessed with JSON tag paths
-		if fv.Kind() == reflect.Struct || (fv.Kind() == reflect.Ptr && fv.Type().Elem().Kind() == reflect.Struct) {
+		if fv.Kind() == reflect.Struct || (fv.Kind() == reflect.Pointer && fv.Type().Elem().Kind() == reflect.Struct) {
 			fieldValue = StructToMap(fieldValue)
 		}
 
