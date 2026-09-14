@@ -48,7 +48,7 @@ func (c *ProcessCommand) Run(args []string) int {
 			return 1
 		}
 
-		if err := printDocuments(docs); err != nil {
+		if err := writeDocuments(os.Stdout, docs); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			return 1
 		}
@@ -76,21 +76,21 @@ func (c *ProcessCommand) processStdin() error {
 		return err
 	}
 
-	return printDocuments(docs)
+	return writeDocuments(os.Stdout, docs)
 }
 
-// printDocuments prints the documents as YAML, separated the way a multi
+// writeDocuments prints the documents as YAML, separated the way a multi
 // document file writes them.
-func printDocuments(docs []yamlexpr.Document) error {
+func writeDocuments(w io.Writer, docs []yamlexpr.Document) error {
 	for i, doc := range docs {
 		if i > 0 {
-			fmt.Println("---")
+			fmt.Fprintln(w, "---")
 		}
 		out, err := yaml.Marshal(doc)
 		if err != nil {
 			return err
 		}
-		fmt.Print(string(out))
+		fmt.Fprint(w, string(out))
 	}
 	return nil
 }

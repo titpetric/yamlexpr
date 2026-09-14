@@ -61,11 +61,11 @@ Low cognitive complexity means there are few conditional branches to cover. Test
 | ✅     |               | TestCommand.Help                               | 0.00%    | 0         |
 | ❌     |               | TestCommand.Run                                | 0.00%    | 12        |
 | ❌     |               | main                                           | 0.00%    | 1         |
-| ❌     |               | printDocuments                                 | 0.00%    | 5         |
 | ✅     |               | printUsage                                     | 0.00%    | 0         |
 | ❌     |               | renderFixture                                  | 0.00%    | 7         |
 | ❌     |               | runFixture                                     | 0.00%    | 12        |
 | ❌     |               | start                                          | 0.00%    | 9         |
+| ❌     |               | writeDocuments                                 | 0.00%    | 5         |
 | ✅     | frontmatter   | DocumentContent.GetFrontmatterField            | 100.00%  | 0         |
 | ✅     |               | DocumentContent.GetFrontmatterFieldWithDefault | 100.00%  | 1         |
 | ✅     |               | ParseDocument                                  | 100.00%  | 16        |

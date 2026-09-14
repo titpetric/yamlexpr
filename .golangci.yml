@@ -11,3 +11,9 @@ linters:
     - unused
     - govet
     - errcheck
+  settings:
+    errcheck:
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintln
+        - fmt.Fprintf
