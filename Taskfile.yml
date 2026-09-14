@@ -26,7 +26,6 @@ tasks:
     desc: "Format code and tidy dependencies"
     cmds:
       - splint fix ./...
-      - gofumpt -w .
       - go mod tidy
 
   fmt:docs:
