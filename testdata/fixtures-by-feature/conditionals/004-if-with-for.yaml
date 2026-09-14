@@ -3,6 +3,12 @@ title: "If Condition with For Loop"
 description: "Combine if: and for: to conditionally filter items during iteration."
 category: "advanced"
 tags: ["if", "for", "filter"]
+---
+active_ports:
+  - for: port in all_ports
+    if: ${port.active}
+    name: "${port.name}"
+    number: ${port.number}
 all_ports:
   - name: "http"
     number: 80
@@ -15,13 +21,17 @@ all_ports:
     active: true
 ---
 active_ports:
-  - for: port in all_ports
-    if: ${port.active}
-    name: "${port.name}"
-    number: ${port.number}
----
-active_ports:
   - name: "http"
     number: 80
   - name: "https"
     number: 443
+all_ports:
+  - name: "http"
+    number: 80
+    active: true
+  - name: "custom"
+    number: 9000
+    active: false
+  - name: "https"
+    number: 443
+    active: true

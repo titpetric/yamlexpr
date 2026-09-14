@@ -67,7 +67,7 @@ Iterate over nested structures with multiple levels of loops.
 **Input:**
 
 ```yaml
-matrix:
+builds:
   - for: os in operating_systems
     os: "${os}"
     versions:
@@ -84,7 +84,7 @@ versions_list:
 **Output:**
 
 ```yaml
-matrix:
+builds:
   - os: "ubuntu"
     versions:
       - version: "18.04"

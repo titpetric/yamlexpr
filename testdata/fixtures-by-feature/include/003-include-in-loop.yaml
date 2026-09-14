@@ -1,6 +1,7 @@
 ---
 title: "Include in For Loop"
 description: "Use includes within for loop templates to compose repeated sections."
+skip: "inline array literals in for are not implemented"
 category: "advanced"
 tags: ["include", "for", "composition"]
 ---

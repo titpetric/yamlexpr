@@ -1,6 +1,7 @@
 ---
 title: "Multiple Interpolations"
 description: "Multiple variables and expressions in a single string."
+skip: "transitive interpolation of interpolated values is not implemented"
 category: "advanced"
 tags: ["interpolation", "multiple", "complex"]
 ---

@@ -83,6 +83,16 @@ active_ports:
     if: ${port.active}
     name: "${port.name}"
     number: ${port.number}
+all_ports:
+  - name: "http"
+    number: 80
+    active: true
+  - name: "custom"
+    number: 9000
+    active: false
+  - name: "https"
+    number: 443
+    active: true
 ```
 
 **Output:**
@@ -93,6 +103,16 @@ active_ports:
     number: 80
   - name: "https"
     number: 443
+all_ports:
+  - name: "http"
+    number: 80
+    active: true
+  - name: "custom"
+    number: 9000
+    active: false
+  - name: "https"
+    number: 443
+    active: true
 ```
 
 ## Nested If Conditions

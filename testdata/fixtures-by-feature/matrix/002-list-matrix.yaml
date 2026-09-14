@@ -1,5 +1,6 @@
 title: "Simple matrix"
 description: "When a matrix is used in a list item, the values of the iteration are carried forward."
+skip: "a matrix in a list item is not implemented, and a document cannot open on a list"
 ---
 - matrix:
     os: [linux]

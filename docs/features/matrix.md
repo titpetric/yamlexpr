@@ -18,19 +18,31 @@ name: "${os}-${arch}-v${version}"
 Rendering produces **4** documents:
 
 ```yaml
-name: "linux-x86-18"
+arch: "x86_64"
+name: "linux-x86_64-v18"
+os: "linux"
+version: 18
 ```
 
 ```yaml
-name: "linux-arm64-18"
+arch: "x86_64"
+name: "linux-x86_64-v20"
+os: "linux"
+version: 20
 ```
 
 ```yaml
-name: "linux-x86-20
+arch: "arm64"
+name: "linux-arm64-v18"
+os: "linux"
+version: 18
 ```
 
 ```yaml
-name: "linux-arm64-20"
+arch: "arm64"
+name: "linux-arm64-v20"
+os: "linux"
+version: 20
 ```
 
 ## Simple matrix

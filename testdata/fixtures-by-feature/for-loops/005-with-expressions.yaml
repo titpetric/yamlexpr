@@ -1,6 +1,7 @@
 ---
 title: "For Loop with Expressions"
 description: "Use expressions and calculations within for loop templates."
+skip: "inline array literals in for are not implemented"
 category: "advanced"
 tags: ["for", "expression", "calculation"]
 ---

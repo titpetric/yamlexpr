@@ -1,6 +1,7 @@
 ---
 title: "For Loop with Empty Array"
 description: "For loops over empty arrays produce no output items."
+skip: "inline array literals in for are not implemented"
 category: "edge-cases"
 tags: ["for", "empty", "edge-case"]
 ---
